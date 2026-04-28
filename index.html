@@ -1,0 +1,2912 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>dcamp · 투자심사위원회 · 투자계획 통합 관리 v16</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&family=Poppins:wght@400;600;700&display=swap');
+  :root{
+    --orange:#FF5E27;--orange-dk:#ED4411;--orange-lt:#FF855C;
+    --black:#000;--white:#fff;
+    --gray01:#ECEAE8;--gray02:#CEC9C5;--gray03:#948F8D;--gray04:#595453;--gray05:#262525;
+    --bg:#F5F3F1;--bg2:#fff;--bg3:#ECEAE8;
+    --border:#DDD9D6;--border2:#CEC9C5;
+    --text:#262525;--text2:#595453;--text3:#948F8D;
+    --success:#1a9e57;--warn:#c87800;--danger:#d63030;--info:#3a6fd8;
+    --paid-pending:#7B5CF5;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Pretendard',-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:13px;}
+
+  .mockup-banner{background:#FFF8F5;border-bottom:2px dashed var(--orange);padding:7px 20px;font-size:11px;color:var(--orange-dk);text-align:center;font-weight:600;letter-spacing:.3px;}
+
+  #app{display:flex;height:calc(100vh - 30px);flex-direction:column;}
+  .topbar{display:flex;align-items:center;gap:14px;padding:0 20px;height:52px;background:var(--black);position:sticky;top:0;z-index:100;flex-shrink:0;}
+  .topbar-logo{font-family:'Poppins',sans-serif;font-size:16px;font-weight:700;color:var(--white);letter-spacing:-.5px;}
+  .topbar-logo span{color:var(--orange);}
+  .topbar-badge{font-size:9px;font-weight:700;letter-spacing:1.8px;color:var(--gray03);text-transform:uppercase;border:1px solid #333;border-radius:2px;padding:2px 7px;}
+  .topbar-sep{width:1px;height:18px;background:#333;}
+  .topbar-title{font-size:12px;color:var(--gray03);}
+  .topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
+  .stat-chip{background:#1c1c1c;border:1px solid #333;border-radius:2px;padding:4px 10px;font-size:11px;color:var(--gray03);}
+  .stat-chip span{color:var(--orange);font-weight:700;}
+  .stat-chip.warn span{color:#f5a623;}
+  .btn-add{background:var(--orange);border:none;border-radius:2px;color:#fff;padding:7px 13px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;}
+  .btn-add:hover{background:var(--orange-dk);}
+  .btn-logout{background:transparent;border:1px solid #333;border-radius:2px;color:var(--gray03);padding:5px 10px;font-size:11px;cursor:pointer;font-family:inherit;}
+
+  .view-tabs{display:flex;align-items:center;background:var(--white);border-bottom:1px solid var(--border);padding:0 20px;flex-shrink:0;}
+  .view-tab{padding:12px 18px;font-size:13px;font-weight:600;color:var(--text3);cursor:pointer;border:none;background:transparent;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;font-family:inherit;white-space:nowrap;}
+  .view-tab:hover{color:var(--text);}
+  .view-tab.active{color:var(--orange);border-bottom-color:var(--orange);}
+
+  .main-wrap{flex:1;overflow-y:auto;padding:20px 20px 40px;background:var(--bg);}
+  .view{display:none;}
+  .view.active{display:block;}
+
+  /* KPI TOGGLE BAR */
+  .kpi-toggle-bar{display:flex;align-items:center;gap:0;background:var(--white);border:1px solid var(--border);border-radius:2px;padding:0;margin-bottom:14px;overflow:hidden;}
+  .kpi-toggle-label{font-size:11px;color:var(--text3);padding:8px 14px;border-right:1px solid var(--border);background:var(--bg3);font-weight:600;letter-spacing:.3px;white-space:nowrap;}
+  .kpi-toggle-group{display:flex;flex:1;}
+  .kpi-toggle-btn{flex:1;padding:8px 12px;background:transparent;border:none;border-right:1px solid var(--border);font-size:11px;font-weight:600;color:var(--text3);cursor:pointer;font-family:inherit;transition:all .15s;text-align:center;}
+  .kpi-toggle-btn:last-child{border-right:none;}
+  .kpi-toggle-btn.active{background:var(--orange);color:#fff;}
+  .kpi-toggle-btn:not(.active):hover{background:var(--bg3);color:var(--text);}
+  .kpi-note{font-size:10px;color:var(--text3);padding:8px 14px;border-left:1px solid var(--border);font-style:italic;white-space:nowrap;}
+  .tooltip-wrap{position:relative;display:inline-flex;align-items:center;}
+  .tooltip-icon{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);color:var(--text3);font-size:9px;font-weight:700;cursor:default;margin-left:4px;flex-shrink:0;}
+  .tooltip-box{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--gray05);color:#fff;font-size:10px;line-height:1.5;padding:6px 10px;border-radius:2px;white-space:nowrap;z-index:200;pointer-events:none;}
+  .tooltip-wrap:hover .tooltip-box{display:block;}
+  /* 도메인 태그 추가 */
+  .tag-domain{background:rgba(58,111,216,.10);color:var(--info);}
+  .tag-focus{background:rgba(255,94,39,.15);color:var(--orange);font-weight:800;}
+  /* 산업 분포 미니 */
+  .domain-dist{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+  .domain-chip{display:flex;align-items:center;gap:5px;background:var(--white);border:1px solid var(--border);border-radius:2px;padding:4px 10px;font-size:11px;}
+  .domain-chip.focus{border-color:rgba(255,94,39,.4);background:#FFF8F5;}
+  .domain-chip-name{color:var(--text2);}
+  .domain-chip-cnt{font-family:'Poppins',sans-serif;font-weight:700;color:var(--orange);font-size:11px;}
+  .domain-chip-amt{color:var(--text3);font-size:10px;}
+
+  /* KPI STRIP */
+  .kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+  .kpi-card{background:var(--white);border:1px solid var(--border);border-top:3px solid var(--orange);border-radius:2px;padding:14px 18px;}
+  .kpi-card.alert{border-top-color:var(--warn);}
+  .kpi-card.ok{border-top-color:var(--success);}
+  .kpi-label{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);margin-bottom:6px;}
+  .kpi-num{font-family:'Poppins',sans-serif;font-size:24px;font-weight:700;line-height:1;margin-bottom:6px;}
+  .kpi-num.orange{color:var(--orange);}
+  .kpi-num.warn{color:var(--warn);}
+  .kpi-num.success{color:var(--success);}
+  .kpi-num.info{color:var(--info);}
+  .kpi-sub{font-size:11px;color:var(--text3);}
+  .kpi-bar{height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-top:8px;}
+  .kpi-bar-fill{height:100%;border-radius:2px;transition:width .6s ease;}
+
+  /* FILTER BAR */
+  .filter-bar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+  .filter-label{font-size:11px;color:var(--text3);font-weight:600;margin-right:4px;}
+  .filter-btn{padding:4px 12px;background:var(--white);border:1px solid var(--border);border-radius:2px;font-size:11px;color:var(--text2);cursor:pointer;font-family:inherit;transition:all .15s;}
+  .filter-btn.active{background:var(--orange);color:#fff;border-color:var(--orange);}
+  .filter-btn:not(.active):hover{border-color:var(--border2);}
+  .filter-sep{width:1px;height:20px;background:var(--border);}
+  .toggle-archived{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text3);cursor:pointer;padding:4px 10px;border:1px solid var(--border);border-radius:2px;background:var(--white);}
+  .toggle-archived input{accent-color:var(--orange);}
+
+  /* LEGEND */
+  .legend{display:flex;align-items:center;gap:16px;padding:7px 12px;background:var(--white);border:1px solid var(--border);border-radius:2px;margin-bottom:12px;font-size:11px;color:var(--text2);flex-wrap:wrap;}
+  .legend-item{display:flex;align-items:center;gap:5px;}
+  .legend-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
+
+  /* PLAN BOARD */
+  .plan-board{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;}
+  .plan-col{background:var(--white);border:1px solid var(--border);border-radius:2px;min-height:280px;display:flex;flex-direction:column;}
+  .plan-col.current{background:#FFF8F5;border-color:var(--orange);}
+  .plan-col-header{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .plan-col.current .plan-col-header{background:rgba(255,94,39,.06);}
+  .plan-col-month{font-family:'Poppins',sans-serif;font-weight:700;font-size:14px;color:var(--text);}
+  .plan-col-month .yr{color:var(--text3);font-size:10px;font-weight:400;margin-right:3px;}
+  .plan-col-month .now{color:var(--orange);font-size:9px;font-weight:700;margin-left:5px;}
+  .plan-col-count{font-size:10px;color:var(--text3);background:var(--white);border:1px solid var(--border);border-radius:10px;padding:1px 8px;}
+  .plan-col-count.has{background:var(--orange);color:#fff;border-color:var(--orange);}
+  .plan-col-body{padding:8px;display:flex;flex-direction:column;gap:6px;flex:1;}
+
+  /* DEAL CARD */
+  .plan-card{background:var(--bg);border:1px solid var(--border);border-left:3px solid var(--text3);border-radius:2px;padding:8px 10px;cursor:pointer;transition:all .15s;}
+  .plan-card:hover{background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06);}
+  .plan-card.archived{opacity:.45;cursor:default;}
+  .plan-card.s-review{border-left-color:var(--info);}
+  .plan-card.s-confirmed{border-left-color:var(--orange);}
+  .plan-card.s-paid{border-left-color:var(--success);background:rgba(26,158,87,.03);}
+  .plan-card.s-pending{border-left-color:var(--paid-pending);background:rgba(123,92,245,.03);}
+  .plan-card.s-rejected{border-left-color:var(--danger);}
+  .plan-card.s-withdrawn{border-left-color:var(--gray03);}
+  .plan-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:4px;margin-bottom:4px;}
+  .plan-card-company{font-weight:600;font-size:12px;color:var(--text);flex:1;min-width:0;}
+  .plan-card-meta{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--text3);margin-bottom:5px;}
+  .plan-card-meta .amt{font-family:'Poppins',sans-serif;font-weight:600;color:var(--text2);font-size:11px;}
+  .plan-card-meta .pre{color:var(--text3);}
+  .plan-card-meta .early{color:var(--warn);font-weight:700;}
+  .plan-card-dates{font-size:10px;color:var(--text3);margin-bottom:5px;display:flex;gap:8px;}
+  .plan-card-dates .dt{display:flex;align-items:center;gap:3px;}
+  .plan-card-dates .dt-label{color:var(--text3);}
+  .plan-card-dates .dt-val{color:var(--text2);font-weight:500;}
+  .plan-card-tags{display:flex;align-items:center;gap:4px;flex-wrap:wrap;}
+
+  /* TAGS */
+  .tag{font-size:9px;font-weight:700;padding:2px 6px;border-radius:2px;letter-spacing:.2px;white-space:nowrap;}
+  .tag-review{background:rgba(58,111,216,.12);color:var(--info);}
+  .tag-confirmed{background:rgba(255,94,39,.12);color:var(--orange);}
+  .tag-paid{background:rgba(26,158,87,.12);color:var(--success);}
+  .tag-pending{background:rgba(123,92,245,.12);color:var(--paid-pending);}
+  .tag-rejected{background:rgba(214,48,48,.10);color:var(--danger);}
+  .tag-withdrawn{background:var(--bg3);color:var(--text3);}
+  .tag-followup{background:rgba(200,120,0,.10);color:var(--warn);}
+  .tag-early{background:rgba(200,120,0,.15);color:#a06000;font-weight:800;}
+  .tag-2025{background:var(--bg3);color:var(--text3);border:1px dashed var(--border2);}
+
+  .plan-add{padding:8px;color:var(--text3);font-size:11px;text-align:center;cursor:pointer;transition:all .15s;border-top:1px dashed var(--border);margin-top:auto;}
+  .plan-add:hover{color:var(--orange);background:#FFF8F5;}
+
+  /* ALGO BOX */
+  .algo-box{background:#FFF8F5;border:1px solid rgba(255,94,39,.2);border-left:3px solid var(--orange);border-radius:2px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:flex-start;gap:10px;}
+  .algo-icon{font-size:16px;margin-top:1px;}
+  .algo-text{font-size:11px;color:var(--text2);line-height:1.6;}
+  .algo-text b{color:var(--text);}
+  .algo-text .k{color:var(--orange);font-weight:600;}
+
+  /* SECTION */
+  .sect-title{font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.7px;margin:18px 0 10px;display:flex;align-items:center;gap:8px;}
+  .sect-title .bar{width:3px;height:13px;background:var(--orange);flex-shrink:0;}
+  .sect-title .cnt{font-weight:400;color:var(--text3);font-size:11px;text-transform:none;letter-spacing:0;}
+  .sect-title .note{font-weight:400;color:var(--warn);font-size:10px;text-transform:none;letter-spacing:0;background:rgba(200,120,0,.10);padding:1px 8px;border-radius:2px;}
+
+  /* TSW 서브탭 */
+  .tsw-subtabs{display:flex;gap:0;background:var(--white);border:1px solid var(--border);border-radius:2px;margin-bottom:14px;overflow:hidden;}
+  .tsw-subtab{flex:1;padding:9px 0;text-align:center;font-size:12px;font-weight:600;color:var(--text3);cursor:pointer;border:none;background:transparent;border-right:1px solid var(--border);font-family:inherit;transition:all .15s;}
+  .tsw-subtab:last-child{border-right:none;}
+  .tsw-subtab.active{background:var(--orange);color:#fff;}
+  .tsw-subtab:not(.active):hover{background:var(--bg3);color:var(--text);}
+  .tsw-subview{display:none;}
+  .tsw-subview.active{display:block;}
+
+  /* 위원 풀 테이블 */
+  .pool-table{width:100%;border-collapse:collapse;font-size:12px;}
+  .pool-table th{background:var(--bg3);border:1px solid var(--border);padding:8px 12px;font-size:10px;font-weight:700;color:var(--text2);letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;}
+  .pool-table td{border:1px solid var(--border);padding:8px 12px;vertical-align:middle;}
+  .pool-table tr:hover td{background:#FFF8F5;}
+  .pool-table tr.is-current td{background:rgba(26,158,87,.04);}
+  .current-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(26,158,87,.12);color:var(--success);font-size:10px;font-weight:700;padding:2px 8px;border-radius:2px;}
+  .pool-priority{font-size:11px;font-weight:700;color:var(--orange);}
+  .pool-priority.none{color:var(--text3);font-weight:400;}
+  .btn-appoint{padding:3px 10px;background:var(--orange);border:none;border-radius:2px;color:#fff;font-size:10px;font-weight:600;cursor:pointer;font-family:inherit;}
+  .btn-appoint:hover{background:var(--orange-dk);}
+  .btn-appoint.appointed{background:var(--success);cursor:default;}
+  /* 위원 현황 패널 */
+  .member-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
+  .member-card{background:var(--white);border:1px solid var(--border);border-radius:2px;padding:12px 14px;position:relative;}
+  .member-card.internal{border-top:3px solid var(--black);}
+  .member-card.external{border-top:3px solid var(--orange);}
+  .member-badge{font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:1px 7px;border-radius:2px;margin-bottom:8px;display:inline-block;}
+  .member-badge.internal{background:var(--bg3);color:var(--text3);}
+  .member-badge.external{background:rgba(255,94,39,.10);color:var(--orange);}
+  .member-name{font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px;font-family:'Poppins',sans-serif;}
+  .member-org{font-size:11px;color:var(--text3);margin-bottom:10px;}
+  .member-stats{display:flex;gap:10px;margin-bottom:8px;}
+  .member-stat{text-align:center;flex:1;}
+  .member-stat-num{font-family:'Poppins',sans-serif;font-size:16px;font-weight:700;}
+  .member-stat-num.green{color:var(--success);}
+  .member-stat-num.warn{color:var(--warn);}
+  .member-stat-num.orange{color:var(--orange);}
+  .member-stat-label{font-size:9px;color:var(--text3);letter-spacing:.3px;}
+  .member-term{font-size:10px;color:var(--text3);padding-top:8px;border-top:1px solid var(--border);}
+  .member-term b{color:var(--text2);}
+  .member-vote-history{display:flex;gap:3px;margin-top:6px;flex-wrap:wrap;}
+  .vote-dot{width:16px;height:16px;border-radius:2px;display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;flex-shrink:0;}
+  .vote-dot.yes{background:rgba(26,158,87,.15);color:var(--success);}
+  .vote-dot.no{background:rgba(214,48,48,.12);color:var(--danger);}
+  .vote-dot.excl{background:rgba(200,120,0,.12);color:var(--warn);}
+  .vote-dot.absent{background:var(--bg3);color:var(--text3);}
+  .vote-dot-label{font-size:9px;color:var(--text3);align-self:center;}
+
+  /* 차수 안건별 찬반 테이블 */
+  .vote-table-wrap{overflow-x:auto;margin-top:10px;}
+  .vote-table{width:100%;border-collapse:collapse;font-size:11px;min-width:700px;}
+  .vote-table th{background:var(--bg3);border:1px solid var(--border);padding:7px 10px;font-weight:700;color:var(--text2);text-align:center;white-space:nowrap;}
+  .vote-table th.agenda-col{text-align:left;min-width:160px;}
+  .vote-table td{border:1px solid var(--border);padding:6px 10px;text-align:center;vertical-align:middle;}
+  .vote-table td.agenda-name{text-align:left;font-weight:600;color:var(--text);}
+  .vote-table td.result-cell{font-weight:700;}
+  .vote-chip{display:inline-flex;align-items:center;justify-content:center;width:26px;height:20px;border-radius:2px;font-size:10px;font-weight:700;}
+  .vote-chip.yes{background:rgba(26,158,87,.15);color:var(--success);}
+  .vote-chip.no{background:rgba(214,48,48,.12);color:var(--danger);}
+  .vote-chip.excl{background:rgba(200,120,0,.12);color:var(--warn);font-size:9px;}
+  .vote-chip.absent{background:var(--bg3);color:var(--text3);}
+  .proxy-note{font-size:9px;color:var(--warn);display:block;margin-top:1px;}
+
+  /* TSW SESSIONS */
+  .tsw-sessions{display:flex;flex-direction:column;gap:12px;}
+  .tsw-session{background:var(--white);border:1px solid var(--border);border-radius:2px;overflow:hidden;}
+  .tsw-session.upcoming{border-top:3px solid var(--orange);}
+  .tsw-session.past{border-top:3px solid var(--success);}
+  .tsw-head{padding:12px 18px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);background:var(--bg3);}
+  .tsw-round{font-family:'Poppins',sans-serif;font-weight:700;font-size:15px;}
+  .tsw-date{font-size:12px;color:var(--text2);}
+  .tsw-status{font-size:10px;font-weight:700;padding:2px 9px;border-radius:2px;letter-spacing:.5px;text-transform:uppercase;}
+  .tsw-status.upcoming{background:var(--orange);color:#fff;}
+  .tsw-status.past{background:var(--success);color:#fff;}
+  .tsw-meta{margin-left:auto;display:flex;align-items:center;gap:16px;font-size:11px;color:var(--text2);}
+  .tsw-meta b{font-family:'Poppins',sans-serif;font-weight:700;color:var(--text);}
+  .tsw-agenda{display:grid;grid-template-columns:44px 1fr 90px 110px 90px 100px 80px 80px;gap:0;padding:9px 18px;border-bottom:1px solid var(--border);font-size:12px;align-items:center;transition:background .1s;}
+  .tsw-agenda:last-child{border-bottom:none;}
+  .tsw-agenda:hover:not(.header){background:#FFF8F5;}
+  .tsw-agenda.header{background:var(--bg3);font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;padding:7px 18px;}
+  .ag-no{font-family:'Poppins',sans-serif;font-weight:700;color:var(--orange);font-size:13px;}
+  .ag-no.muted{color:var(--text3);font-weight:400;font-size:12px;}
+  .ag-company{font-weight:600;color:var(--text);}
+  .ag-company .from{font-size:10px;color:var(--text3);font-weight:400;display:block;margin-top:1px;}
+  .ag-form{font-size:11px;color:var(--text2);}
+  .ag-amt{font-family:'Poppins',sans-serif;font-weight:600;font-size:12px;}
+  .ag-pre{font-size:11px;color:var(--text3);}
+  .ag-pre .early{color:var(--warn);font-weight:700;}
+  .ag-result{display:flex;align-items:center;gap:4px;}
+  .ag-paid{font-size:10px;color:var(--text3);}
+  .ag-action{text-align:right;}
+  .btn-mini{padding:3px 9px;background:var(--white);border:1px solid var(--border);border-radius:2px;font-size:10px;color:var(--text2);cursor:pointer;font-family:inherit;transition:all .15s;}
+  .btn-mini:hover{border-color:var(--orange);color:var(--orange);}
+
+  /* MODAL */
+  .modal-overlay{position:fixed;inset:0;background:rgba(38,37,37,.5);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:500;padding:20px;}
+  .modal-overlay.show{display:flex;}
+  .modal{background:var(--white);border:1px solid var(--border);border-top:3px solid var(--orange);border-radius:2px;width:540px;max-width:100%;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,.15);}
+  .modal-header{display:flex;align-items:center;justify-content:space-between;padding:15px 20px;border-bottom:1px solid var(--border);}
+  .modal-title{font-size:14px;font-weight:600;}
+  .modal-close{background:transparent;border:none;color:var(--text3);font-size:18px;cursor:pointer;}
+  .modal-body{padding:18px 20px;overflow-y:auto;}
+  .modal-footer{display:flex;gap:8px;justify-content:flex-end;padding:12px 20px;border-top:1px solid var(--border);}
+  .form-group{margin-bottom:12px;}
+  .form-label{display:block;font-size:10px;font-weight:700;color:var(--text2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;}
+  .form-input,.form-select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:2px;padding:8px 10px;font-size:12px;outline:none;font-family:inherit;}
+  .form-input:focus,.form-select:focus{border-color:var(--orange);}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .form-hint{font-size:10px;color:var(--text3);margin-top:3px;}
+  .btn{padding:7px 14px;border-radius:2px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;border:none;}
+  .btn-primary{background:var(--orange);color:#fff;}
+  .btn-primary:hover{background:var(--orange-dk);}
+  .btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border);}
+
+  /* TOAST */
+  #toast{position:fixed;bottom:24px;right:24px;background:var(--gray05);border-radius:2px;padding:10px 16px;font-size:12px;color:var(--white);box-shadow:0 4px 20px rgba(0,0,0,.2);transform:translateY(80px);opacity:0;transition:all .3s;z-index:9999;}
+  #toast.show{transform:translateY(0);opacity:1;}
+  #toast.success{background:var(--success);}
+  #toast.info{background:var(--info);}
+
+  ::-webkit-scrollbar{width:5px;height:5px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+
+  /* 결과 입력 모달 */
+  .result-modal{width:760px !important;}
+  .step-bar{display:flex;align-items:center;padding:12px 20px;background:var(--bg3);border-bottom:1px solid var(--border);flex-shrink:0;gap:0;}
+  .step-node{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+  .step-circle{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;border:2px solid var(--border);}
+  .step-circle.s-done{background:var(--success);border-color:var(--success);color:#fff;}
+  .step-circle.s-active{background:var(--orange);border-color:var(--orange);color:#fff;}
+  .step-circle.s-pending{background:var(--white);border-color:var(--border2);color:var(--text3);}
+  .step-text{font-size:11px;font-weight:600;white-space:nowrap;}
+  .step-text.s-active{color:var(--text);}
+  .step-text.s-pending{color:var(--text3);}
+  .step-line{flex:1;height:1px;background:var(--border);margin:0 12px;min-width:20px;}
+  /* 위원 카드 그리드 */
+  .attend-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+  .attend-card{padding:10px 12px;background:var(--bg);border:1.5px solid var(--border);border-radius:2px;cursor:pointer;transition:all .15s;user-select:none;}
+  .attend-card:hover{border-color:var(--border2);}
+  .attend-card.s-present{border-color:var(--success);background:rgba(26,158,87,.05);}
+  .attend-card.s-proxy{border-color:var(--warn);background:rgba(200,120,0,.05);}
+  .attend-card.s-absent{border-color:var(--border);background:var(--bg3);opacity:.6;}
+  .attend-card-name{font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;}
+  .attend-card-org{font-size:10px;color:var(--text3);margin-bottom:6px;}
+  .attend-card-state{font-size:10px;font-weight:700;padding:2px 7px;border-radius:2px;display:inline-block;}
+  .attend-card-state.s-present{background:rgba(26,158,87,.12);color:var(--success);}
+  .attend-card-state.s-proxy{background:rgba(200,120,0,.12);color:var(--warn);}
+  .attend-card-state.s-absent{background:var(--bg3);color:var(--text3);}
+  /* 찬반 입력 테이블 */
+  .vi-table{width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed;}
+  .vi-table th{background:var(--bg3);border:1px solid var(--border);padding:6px 4px;font-size:10px;font-weight:700;color:var(--text2);text-align:center;white-space:nowrap;overflow:hidden;}
+  .vi-table th.agenda-h{text-align:left;width:110px;}
+  .vi-table td{border:1px solid var(--border);padding:5px 3px;text-align:center;vertical-align:middle;}
+  .vi-table td.agenda-n{text-align:left;font-weight:600;font-size:11px;padding-left:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .vi-sel{width:46px;padding:3px 1px;border:1px solid var(--border);border-radius:2px;font-size:10px;background:var(--bg);font-family:inherit;cursor:pointer;text-align:center;}
+  .vi-sel:focus{outline:none;border-color:var(--orange);}
+  .vi-sel.vyes{border-color:var(--success);background:rgba(26,158,87,.1);color:var(--success);font-weight:700;}
+  .vi-sel.vno{border-color:var(--danger);background:rgba(214,48,48,.09);color:var(--danger);font-weight:700;}
+  .vi-sel.vexcl{border-color:var(--warn);background:rgba(200,120,0,.09);color:var(--warn);}
+  .vi-sel.vabsent{background:var(--bg3);color:var(--text3);}
+  .vi-sel:disabled{opacity:.4;cursor:default;}
+  .vi-result{font-size:11px;font-weight:700;white-space:nowrap;}
+  .vi-result.pass{color:var(--success);}
+  .vi-result.fail{color:var(--danger);}
+
+  /* 개최 등록 버튼 */
+  .btn-new-tsw{display:flex;align-items:center;gap:6px;background:var(--white);border:1px solid var(--border);border-radius:2px;color:var(--text2);padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;margin-bottom:12px;}
+  .btn-new-tsw:hover{border-color:var(--orange);color:var(--orange);}
+  .tsw-session.draft{border-top:3px solid var(--text3);opacity:.85;}
+  .tsw-status.draft{background:var(--bg3);color:var(--text3);}
+  /* 금액 출처 뱃지 */
+  .amt-badge{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;padding:1px 5px;border-radius:2px;vertical-align:middle;margin-left:3px;}
+  .amt-badge.provisional{background:rgba(200,120,0,.12);color:var(--warn);border:1px solid rgba(200,120,0,.2);}
+  .amt-badge.kiips{background:rgba(26,158,87,.12);color:var(--success);border:1px solid rgba(26,158,87,.2);}
+  .amt-badge.kiips::before{content:'';display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--success);margin-right:2px;}
+  /* 연도 스위처 */
+  .year-switcher{display:flex;align-items:center;gap:0;background:var(--white);border:1px solid var(--border);border-radius:2px;overflow:hidden;}
+  .year-btn{padding:5px 13px;background:transparent;border:none;border-right:1px solid var(--border);color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;transition:all .15s;}
+  .year-btn:last-child{border-right:none;}
+  .year-btn.active{background:var(--orange);color:#fff;}
+  .year-btn:not(.active):hover{background:var(--bg3);color:var(--text);}
+  /* 설정 아이콘 */
+  .btn-settings{display:flex;align-items:center;justify-content:center;width:30px;height:30px;background:transparent;border:1px solid #333;border-radius:2px;color:var(--gray03);cursor:pointer;font-size:14px;transition:all .2s;}
+  .btn-settings:hover{border-color:#555;color:var(--white);}
+
+  /* ── 비밀번호 화면 ── */
+  #pw-screen{
+    position:fixed;inset:0;background:#111;z-index:99999;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .pw-box{
+    width:360px;background:#1a1a1a;border:1px solid #2a2a2a;
+    border-radius:4px;padding:40px 36px;text-align:center;
+  }
+  .pw-logo{font-size:28px;font-weight:700;color:#fff;letter-spacing:-1px;margin-bottom:4px;}
+  .pw-logo span{color:#FF5E27;}
+  .pw-sub{font-size:11px;color:#555;letter-spacing:1px;text-transform:uppercase;margin-bottom:32px;}
+  .pw-label{font-size:11px;color:#888;text-align:left;margin-bottom:6px;display:block;}
+  .pw-input{
+    width:100%;background:#111;border:1px solid #333;border-radius:2px;
+    color:#fff;font-size:14px;padding:10px 12px;outline:none;
+    box-sizing:border-box;font-family:inherit;transition:border-color .15s;
+  }
+  .pw-input:focus{border-color:#FF5E27;}
+  .pw-btn{
+    width:100%;margin-top:14px;background:#FF5E27;border:none;border-radius:2px;
+    color:#fff;font-size:13px;font-weight:700;padding:11px;cursor:pointer;
+    font-family:inherit;transition:background .15s;letter-spacing:.3px;
+  }
+  .pw-btn:hover{background:#e04d1a;}
+  .pw-err{
+    margin-top:10px;font-size:11px;color:#e05555;
+    min-height:16px;transition:opacity .2s;
+  }
+  .pw-hint{margin-top:24px;font-size:10px;color:#444;}
+</style>
+</head>
+<body>
+  <!-- 비밀번호 화면 -->
+  <div id="pw-screen">
+    <div class="pw-box">
+      <div class="pw-logo">d<span>camp</span></div>
+      <div class="pw-sub">TYPE1 · Investment Dashboard</div>
+      <label class="pw-label">비밀번호를 입력하세요</label>
+      <input class="pw-input" type="password" id="pw-input"
+        placeholder="Password" onkeydown="if(event.key==='Enter')checkPw()">
+      <button class="pw-btn" onclick="checkPw()">입장하기</button>
+      <div class="pw-err" id="pw-err"></div>
+      <div class="pw-hint">권한이 없으신 경우 투자팀에 문의하세요.</div>
+    </div>
+  </div>
+
+<div class="mockup-banner">⚙️ 목업 v16 · 요구사항 논의용 시안 · 2026년 실제 데이터 기반 (가결일·납입일·Pre-money 반영)</div>
+
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-logo">d<span>camp</span></div>
+    <div class="topbar-badge">TYPE1</div>
+    <div class="topbar-sep"></div>
+    <div class="topbar-title">투자심사위원회 · 투자계획 통합 관리</div>
+    <div class="topbar-right">
+      <button class="btn-settings" onclick="openSettings()" title="연도별 파라미터 설정">⚙</button>
+      <button class="btn-logout">로그아웃</button>
+    </div>
+  </div>
+
+  <div class="view-tabs" style="justify-content:space-between;">
+    <div style="display:flex;">
+      <button class="view-tab active" onclick="switchView('plan',this)">📅 투자 계획</button>
+      <button class="view-tab" onclick="switchView('tsw',this)">🏛 투자심사위원회</button>
+      <button class="view-tab" onclick="switchView('kpi',this)">📊 KPI 모니터링</button>
+    </div>
+    <div style="display:flex;align-items:center;padding-right:4px;">
+      <div class="year-switcher" id="year-switcher">
+        <button class="year-btn" onclick="switchYear(2024,this)">2024</button>
+        <button class="year-btn" onclick="switchYear(2025,this)">2025</button>
+        <button class="year-btn active" onclick="switchYear(2026,this)">2026</button>
+        <button class="year-btn" onclick="switchYear(2027,this)">2027</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-wrap">
+
+    <!-- ===== VIEW: 투자 계획 ===== -->
+    <div id="view-plan" class="view active">
+
+      <div class="kpi-toggle-bar">
+        <div class="kpi-toggle-label">KPI 집계 기준</div>
+        <div class="kpi-toggle-group">
+          <button class="kpi-toggle-btn active" onclick="setKpiMode('paid',this)">
+            2026 계획 · 납입 완료
+            <span class="tooltip-wrap"><span class="tooltip-icon">?</span><span class="tooltip-box">2026년 투자계획 건 중 실제 납입이 완료된 건만 집계<br>2025년 계획 건·납입 대기 건 제외</span></span>
+          </button>
+          <button class="kpi-toggle-btn" onclick="setKpiMode('passed',this)">
+            2026 계획 · 가결 기준
+            <span class="tooltip-wrap"><span class="tooltip-icon">?</span><span class="tooltip-box">2026년 투자계획 건 중 투심위 가결된 건 전체<br>납입 대기(스텝랩·23세기아이들·비즈) 포함<br>2025년 계획 건 제외</span></span>
+          </button>
+          <button class="kpi-toggle-btn" onclick="setKpiMode('all',this)">
+            2026 납입 전체
+            <span class="tooltip-wrap"><span class="tooltip-icon">?</span><span class="tooltip-box">2026년에 실제 납입된 모든 건<br>2025년 계획이었으나 2026년에 납입된 건 포함<br>(르몽·콘스탄트·아헤스) — 기준 미확정</span></span>
+          </button>
+        </div>
+        <div class="kpi-note" id="kpi-note">-</div>
+      </div>
+
+      <!-- KPI 카드 -->
+      <div class="kpi-strip" style="grid-template-columns:repeat(5,1fr);">
+        <div class="kpi-card">
+          <div class="kpi-label">예산 집행 / 250억</div>
+          <div class="kpi-num orange" id="kpi-total">-</div>
+          <div class="kpi-sub" id="kpi-total-sub">-</div>
+          <div class="kpi-bar"><div class="kpi-bar-fill" id="kpi-bar-total" style="width:0;background:var(--orange)"></div></div>
+        </div>
+        <div class="kpi-card alert">
+          <div class="kpi-label">극초기 집행 / 목표 50억 (20%)</div>
+          <div class="kpi-num warn" id="kpi-early">-</div>
+          <div class="kpi-sub" id="kpi-early-sub">-</div>
+          <div class="kpi-bar"><div class="kpi-bar-fill" id="kpi-bar-early" style="width:0;background:var(--warn)"></div></div>
+        </div>
+        <div class="kpi-card" id="kpi-focus-card">
+          <div class="kpi-label">집중투자 집행 / 목표 200억 (80%)</div>
+          <div class="kpi-num" id="kpi-focus" style="color:var(--danger)">-</div>
+          <div class="kpi-sub" id="kpi-focus-sub">-</div>
+          <div class="kpi-bar"><div class="kpi-bar-fill" id="kpi-bar-focus" style="width:0;background:var(--danger)"></div></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">2026 가결 건수</div>
+          <div class="kpi-num info" id="kpi-count">-</div>
+          <div class="kpi-sub" id="kpi-count-sub">납입완료 · 납입대기 포함</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">부결 / 취하</div>
+          <div class="kpi-num" id="kpi-dropped" style="color:var(--text3)">-</div>
+          <div class="kpi-sub" id="kpi-dropped-sub">-</div>
+        </div>
+      </div>
+
+      <!-- 산업 분포 미니 요약 -->
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:2px;padding:10px 14px;margin-bottom:14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.7px;text-transform:uppercase;">산업 도메인 분포 · 2026 계획 건</div>
+          <div style="font-size:10px;color:var(--text3);">★ 2026 집중투자 도메인</div>
+        </div>
+        <div class="domain-dist" id="domain-dist"></div>
+      </div>
+      <div class="algo-box">
+        <div class="algo-icon">💡</div>
+        <div class="algo-text">
+          <b>업무 플로우:</b> 심사역이 딜을 <span class="k">검토중</span>으로 등록 → 개최 확정 시 <span class="k">상정 확정</span> → 투심위 상정 후 <span class="k">가결(납입대기)</span> → 실제 납입 완료 시 <span class="k">가결(납입완료)</span>로 전환. 
+          부결은 제거 또는 다음 월로 재상정. 취하는 사유와 함께 아카이브 처리됩니다.
+        </div>
+      </div>
+
+      <!-- 필터 -->
+      <div class="filter-bar">
+        <span class="filter-label">담당자</span>
+        <button class="filter-btn active" onclick="setFilter('manager','all',this)">전체</button>
+        <button class="filter-btn" onclick="setFilter('manager','김한솔',this)">김한솔</button>
+        <button class="filter-btn" onclick="setFilter('manager','이인호',this)">이인호</button>
+        <button class="filter-btn" onclick="setFilter('manager','이은정',this)">이은정</button>
+        <button class="filter-btn" onclick="setFilter('manager','김영상',this)">김영상</button>
+        <button class="filter-btn" onclick="setFilter('manager','성낙환',this)">성낙환</button>
+        <div class="filter-sep"></div>
+        <label class="toggle-archived">
+          <input type="checkbox" id="show-archived" onchange="toggleArchived(this.checked)"> 부결·취하 표시
+        </label>
+        <div style="margin-left:auto;">
+          <button class="btn-add" onclick="openAddModal()" style="font-size:11px;padding:6px 13px;">＋ 계획 추가</button>
+        </div>
+      </div>
+
+      <div class="legend">
+        <div class="legend-item"><span class="legend-dot" style="background:var(--info)"></span>검토중</div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--orange)"></span>상정 확정</div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--paid-pending)"></span>가결(납입대기)</div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--success)"></span>가결(납입완료)</div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--danger)"></span>부결</div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--gray03)"></span>취하</div>
+        <div class="legend-item"><span class="amt-badge kiips" style="position:static;">KiiPS 확정</span> KiiPS 등록 완료</div>
+        <div class="legend-item"><span class="amt-badge provisional" style="position:static;">계획 잠정</span> 납입 전 가안</div>
+        <div class="legend-item" style="margin-left:auto;"><span class="tag tag-early">극초기</span> Pre ≤ 100억</div>
+        <div class="legend-item"><span class="tag tag-followup">후속</span></div>
+        <div class="legend-item"><span class="tag tag-2025">25년계획</span></div>
+      </div>
+
+      <!-- 계획 보드 -->
+      <div class="plan-board" id="plan-board">
+        <!-- 1월 -->
+        <div class="plan-col" data-month="1">
+          <div class="plan-col-header">
+            <div class="plan-col-month"><span class="yr">2026</span> 1월</div>
+            <div class="plan-col-count has" id="cnt-1">4</div>
+          </div>
+          <div class="plan-col-body">
+            <div class="plan-card s-paid" data-manager="이인호" data-status="paid" data-pre="150" data-domain="SaaS" onclick="openDetail('루트릭스')">
+              <div class="plan-card-top"><div class="plan-card-company">루트릭스</div></div>
+              <div class="plan-card-meta"><span class="amt">3.0억</span><span class="amt-badge kiips">KiiPS 확정</span><span class="pre" style="margin-left:4px;">Pre 150억</span><span style="color:var(--text3)">· 이인호</span></div>
+              <div class="plan-card-dates">
+                <div class="dt"><span class="dt-label">가결</span><span class="dt-val">01.22</span></div>
+                <div class="dt"><span class="dt-label">납입</span><span class="dt-val">01.27</span></div>
+              </div>
+              <div class="plan-card-tags"><span class="tag tag-paid">가결·납입완료</span><span class="tag">1차</span><span class="tag tag-domain">SaaS</span></div>
+            </div>
+            <div class="plan-card s-paid" data-manager="이은정" data-status="paid" data-pre="180" data-domain="의료기기" onclick="openDetail('아이메디텍')"">
+              <div class="plan-card-top"><div class="plan-card-company">아이메디텍</div></div>
+              <div class="plan-card-meta"><span class="amt">5.0억</span><span class="amt-badge kiips">KiiPS 확정</span><span class="pre">Pre 180억</span><span style="color:var(--text3)">· 이은정</span></div>
+              <div class="plan-card-dates">
+                <div class="dt"><span class="dt-label">가결</span><span class="dt-val">01.22</span></div>
+                <div class="dt"><span class="dt-label">납입</span><span class="dt-val">02.03</span></div>
+              </div>
+              <div class="plan-card-tags"><span class="tag tag-paid">가결·납입완료</span><span class="tag">1차</span><span class="tag tag-focus">★의료기기</span></div>
+            </div>
+            <div class="plan-card s-paid" data-manager="이은정" data-status="paid" data-pre="370" data-domain="E-commerce" onclick="openDetail('바인드')"">
+              <div class="plan-card-top"><div class="plan-card-company">바인드</div></div>
+              <div class="plan-card-meta"><span class="amt">5.0억</span><span class="amt-badge kiips">KiiPS 확정</span><span class="pre">Pre 370억</span><span style="color:var(--text3)">· 이은정</span></div>
+              <div class="plan-card-dates">
+                <div class="dt"><span class="dt-label">가결</span><span class="dt-val">01.22</span></div>
+                <div class="dt"><span class="dt-label">납입</span><span class="dt-val">02.23</span></div>
+              </div>
+              <div class="plan-card-tags"><span class="tag tag-paid">가결·납입완료</span><span class="tag tag-followup">후속</span><span class="tag tag-domain">E-commerce</span></div>
+            </div>
+            <div class="plan-card s-paid" data-manager="김영상" data-status="paid" data-pre="50" data-domain="SaaS" onclick="openDetail('그리네타')"">
+              <div class="plan-card-top"><div class="plan-card-company">그리네타</div></div>
+              <div class="plan-card-meta"><span class="amt">2.0억</span><span class="amt-badge kiips">KiiPS 확정</span><span class="pre early" style="margin-left:4px;">Pre 50억 ●</span><span style="color:var(--text3)">· 김영상</span></div>
+              <div class="plan-card-dates">
+                <div class="dt"><span class="dt-label">가결</span><span class="dt-val">01.22</span></div>
+                <div class="dt"><span class="dt-label">납입</span><span class="dt-val">02.25</span></div>
+              </div>
+              <div class="plan-card-tags"><span class="tag tag-paid">가결·납입완료</span><span class="tag tag-early">극초기</span><span class="tag tag-domain">SaaS</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2월 -->
+        <div class="plan-col" data-month="2">
+          <div class="plan-col-header">
+            <div class="plan-col-month"><span class="yr">2026</span> 2월</div>
+            <div class="plan-col-count has" id="cnt-2">4</div>
+          </div>
+          <div class="plan-col-body">
+            <div class="plan-card s-pending" data-manager="이인호" data-status="pending" data-pre="360" data-domain="SaaS">
+              <div class="plan-card-top"><div class="plan-card-company">스텝랩</div></div>
+              <div class="plan-card-meta"><span class="amt">10.0억</span><span class="amt-badge provisional">계획 잠정</span><span class="pre">Pre 360억</span><span style="color:var(--text3)">· 이인호</span></div>
+              <div class="plan-card-dates">
+                <div class="dt"><span class="dt-label">가결</span><span class="dt-val">02.25</span></div>
+                <div class="dt"><span class="dt-label">납입</span><span class="dt-val" style="color:var(--paid-pending)">대기중</span></div>
+              </div>
+              <div class="plan-card-tags"><span class="tag tag-pending">가결·납입대기</span><span class="tag">3차</span><span class="tag tag-domain">SaaS</span></div>
+            </div>
+            <div class="plan-card s-paid" data-manager="이은정" data-status="paid" data-pre="300" data-domain="우주·항공·방산">
+              <div class="plan-card-top"><div class="plan-card-company">인터그래비티</div></div>
+              <div class="plan-card-meta"><span class="amt">10.0억</span><span class="amt-badge kiips">KiiPS 확정</span><span class="pre">Pre 300억</span><span style="color:var(--text3)">· 이은정</span></div>
+              <div class="plan-card-dates">
+                <div class="dt"><span class="dt-label">가결</span><span class="dt-val">02.25</span></div>
+                <div class="dt"><span class="dt-label">납입</span><span class="dt-val">03.13</span></div>
+              </div>
+              <div class="plan-card-tags"><span class="tag tag-paid">가결·납입완료</span><span class="tag">3차</span><span class="tag tag-focus">★우주·항공·방산</span></div>
+            </div>
+            <div class="plan-card s-pending" data-manager="이인호" data-status="pending" data-pre="180" data-domain="미디어/엔터">
+              <div class="plan-card-top"><div class="plan-card-company">23세기아이들</div></div>
+              <div class="plan-card-meta"><span class="amt">5.0억</span><span class="amt-badge provisional">계획 잠정</span><span class="pre">Pre 180억</span><span style="color:var(--text3)">· 이인호</span></div>
+              <div class="plan-card-dates">
+                <div class="dt"><span class="dt-label">가결</span><span class="dt-val">02.25</span></div>
+                <div class="dt"><span class="dt-label">납입</span><span class="dt-val" style="color:var(--paid-pending)">대기중</span></div>
+              </div>
+              <div class="plan-card-tags"><span class="tag tag-pending">가결·납입대기</span><span class="tag">3차</span><span class="tag tag-domain">미디어/엔터</span></div>
+            </div>
+            <!-- 부결/취하 - 기본 숨김 -->
+            <div class="plan-card s-rejected archived" data-manager="김영상" data-status="rejected" data-archived="true">
+              <div class="plan-card-top"><div class="plan-card-company">그린다</div></div>
+              <div class="plan-card-meta"><span class="amt">5.0억</span><span class="pre">Pre 249억</span><span style="color:var(--text3)">· 김영상</span></div>
+              <div class="plan-card-dates">
+                <div class="dt"><span class="dt-label">심의</span><span class="dt-val">02.25</span></div>
+                <div class="dt"><span class="dt-label">결과</span><span class="dt-val" style="color:var(--danger)">부결</span></div>
+              </div>
+              <div class="plan-card-tags"><span class="tag tag-rejected">부결 33.3%</span><span class="tag">3차</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3월 -->
+        <div class="plan-col" data-month="3">
+          <div class="plan-col-header">
+            <div class="plan-col-month"><span class="yr">2026</span> 3월</div>
+            <div class="plan-col-count has" id="cnt-3">2</div>
+          </div>
+          <div class="plan-col-body">
+            <div class="plan-card s-paid" data-manager="이은정" data-status="paid" data-pre="160" data-domain="F&B">
+              <div class="plan-card-top"><div class="plan-card-company">웨이크</div></div>
+              <div class="plan-card-meta"><span class="amt">10.0억</span><span class="amt-badge kiips">KiiPS 확정</span><span class="pre">Pre 160억</span><span style="color:var(--text3)">· 이은정</span></div>
+              <div class="plan-card-dates">
+                <div class="dt"><span class="dt-label">가결</span><span class="dt-val">03.25</span></div>
+                <div class="dt"><span class="dt-label">납입</span><span class="dt-val">04.01</span></div>
+              </div>
+              <div class="plan-card-tags"><span class="tag tag-paid">가결·납입완료</span><span class="tag">4차</span><span class="tag tag-domain">F&B</span></div>
+            </div>
+            <div class="plan-card s-pending" data-manager="김영상" data-status="pending" data-pre="466" data-domain="차세대에너지">
+              <div class="plan-card-top"><div class="plan-card-company">비즈</div></div>
+              <div class="plan-card-meta"><span class="amt">10.0억</span><span class="amt-badge provisional">계획 잠정</span><span class="pre">Pre 466억</span><span style="color:var(--text3)">· 김영상</span></div>
+              <div class="plan-card-dates">
+                <div class="dt"><span class="dt-label">가결</span><span class="dt-val">03.25</span></div>
+                <div class="dt"><span class="dt-label">납입</span><span class="dt-val" style="color:var(--paid-pending)">대기중</span></div>
+              </div>
+              <div class="plan-card-tags"><span class="tag tag-pending">가결·납입대기</span><span class="tag">4차</span><span class="tag tag-domain">차세대에너지</span></div>
+            </div>
+            <!-- 취하 - 기본 숨김 -->
+            <div class="plan-card s-withdrawn archived" data-manager="김영상" data-status="withdrawn" data-archived="true">
+              <div class="plan-card-top"><div class="plan-card-company">에스엔디스플레이</div></div>
+              <div class="plan-card-meta"><span class="amt">10.0억</span><span class="pre">Pre 351억</span><span style="color:var(--text3)">· 김영상</span></div>
+              <div class="plan-card-dates">
+                <div class="dt"><span class="dt-label">심의예정</span><span class="dt-val">03.25</span></div>
+              </div>
+              <div class="plan-card-tags"><span class="tag tag-withdrawn">취하·기업거절</span><span class="tag">4차</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4월 (현재) -->
+        <div class="plan-col current" data-month="4">
+          <div class="plan-col-header">
+            <div class="plan-col-month"><span class="yr">2026</span> 4월 <span class="now">● 이번 달</span></div>
+            <div class="plan-col-count has" id="cnt-4">4</div>
+          </div>
+          <div class="plan-col-body">
+            <div class="plan-card s-confirmed" data-manager="김한솔" data-status="confirmed" data-pre="340" data-domain="로봇">
+              <div class="plan-card-top"><div class="plan-card-company">위드로봇</div></div>
+              <div class="plan-card-meta"><span class="amt">10.0억</span><span class="amt-badge provisional">계획 잠정</span><span class="pre">Pre 340억</span><span style="color:var(--text3)">· 김한솔</span></div>
+              <div class="plan-card-dates">
+                <div class="dt"><span class="dt-label">투심위</span><span class="dt-val" style="color:var(--orange)">04.23예정</span></div>
+              </div>
+              <div class="plan-card-tags"><span class="tag tag-confirmed">상정 확정 · 5차</span><span class="tag tag-focus">★로봇</span></div>
+            </div>
+            <div class="plan-card s-confirmed" data-manager="김영상" data-status="confirmed" data-pre="360" data-domain="차세대에너지">
+              <div class="plan-card-top"><div class="plan-card-company">에너테크</div></div>
+              <div class="plan-card-meta"><span class="amt">10.0억</span><span class="amt-badge provisional">계획 잠정</span><span class="pre">Pre 360억</span><span style="color:var(--text3)">· 김영상</span></div>
+              <div class="plan-card-dates">
+                <div class="dt"><span class="dt-label">투심위</span><span class="dt-val" style="color:var(--orange)">04.23예정</span></div>
+              </div>
+              <div class="plan-card-tags"><span class="tag tag-confirmed">상정 확정 · 5차</span><span class="tag tag-domain">차세대에너지</span></div>
+            </div>
+            <div class="plan-card s-confirmed" data-manager="이은정" data-status="confirmed" data-pre="304" data-domain="패션/뷰티">
+              <div class="plan-card-top"><div class="plan-card-company">딥포인트</div></div>
+              <div class="plan-card-meta"><span class="amt">5.0억</span><span class="amt-badge provisional">계획 잠정</span><span class="pre">Pre 304억</span><span style="color:var(--text3)">· 이은정</span></div>
+              <div class="plan-card-dates">
+                <div class="dt"><span class="dt-label">투심위</span><span class="dt-val" style="color:var(--orange)">04.23예정</span></div>
+              </div>
+              <div class="plan-card-tags"><span class="tag tag-confirmed">상정 확정 · 5차</span><span class="tag tag-focus">★패션/뷰티</span></div>
+            </div>
+            <div class="plan-card s-confirmed" data-manager="김한솔" data-status="confirmed" data-pre="104" data-domain="로봇">
+              <div class="plan-card-top"><div class="plan-card-company">테솔로</div></div>
+              <div class="plan-card-meta"><span class="amt">2.5억</span><span class="amt-badge provisional">계획 잠정</span><span class="pre">Pre 104억</span><span style="color:var(--text3)">· 김한솔</span></div>
+              <div class="plan-card-dates">
+                <div class="dt"><span class="dt-label">투심위</span><span class="dt-val" style="color:var(--orange)">04.23예정</span></div>
+              </div>
+              <div class="plan-card-tags"><span class="tag tag-confirmed">상정 확정 · 5차</span><span class="tag tag-followup">후속</span><span class="tag tag-focus">★로봇</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5월 -->
+        <div class="plan-col" data-month="5">
+          <div class="plan-col-header">
+            <div class="plan-col-month"><span class="yr">2026</span> 5월</div>
+            <div class="plan-col-count has" id="cnt-5">4</div>
+          </div>
+          <div class="plan-col-body">
+            <div class="plan-card s-review" data-manager="김한솔" data-status="review" data-pre="0">
+              <div class="plan-card-top"><div class="plan-card-company">서울다이나믹스</div></div>
+              <div class="plan-card-meta"><span class="amt">5.0억</span><span style="color:var(--text3)">· 김한솔</span></div>
+              <div class="plan-card-tags"><span class="tag tag-review">검토중</span></div>
+            </div>
+            <div class="plan-card s-review" data-manager="이인호" data-status="review" data-pre="0">
+              <div class="plan-card-top"><div class="plan-card-company">MPNX</div></div>
+              <div class="plan-card-meta"><span class="amt">2.0억</span><span style="color:var(--text3)">· 이인호</span></div>
+              <div class="plan-card-tags"><span class="tag tag-review">검토중</span></div>
+            </div>
+            <div class="plan-card s-review" data-manager="김영상" data-status="review" data-pre="0">
+              <div class="plan-card-top"><div class="plan-card-company">레오스페이스</div></div>
+              <div class="plan-card-meta"><span class="amt">10.0억</span><span style="color:var(--text3)">· 김영상</span></div>
+              <div class="plan-card-tags"><span class="tag tag-review">검토중</span></div>
+            </div>
+            <div class="plan-card s-review" data-manager="김영상" data-status="review" data-pre="0">
+              <div class="plan-card-top"><div class="plan-card-company">JJ&amp;COMPANIES</div></div>
+              <div class="plan-card-meta"><span class="amt">10.0억</span><span style="color:var(--text3)">· 김영상</span></div>
+              <div class="plan-card-tags"><span class="tag tag-review">검토중</span></div>
+            </div>
+            <div class="plan-add" onclick="openAddModal()">＋ 계획 추가</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2025년 계획 건 별도 섹션 -->
+      <div class="sect-title" style="margin-top:24px;">
+        <span class="bar"></span>2025년 계획 건 · 2026년 납입 완료
+        <span class="note">KPI 집계 포함 여부 별도 결정 필요</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+        <div class="plan-card s-paid" data-manager="-" data-status="paid" data-pre="99.5" style="background:var(--white);border:1px solid var(--border);">
+          <div class="plan-card-top"><div class="plan-card-company">르몽</div></div>
+          <div class="plan-card-meta"><span class="amt">5.0억</span><span class="amt-badge kiips">KiiPS 확정</span><span class="pre early">Pre 99.5억 ●</span></div>
+          <div class="plan-card-dates"><div class="dt"><span class="dt-label">납입</span><span class="dt-val">2026-01-16</span></div></div>
+          <div class="plan-card-tags"><span class="tag tag-paid">납입완료</span><span class="tag tag-2025">25년 계획</span><span class="tag tag-early">극초기</span></div>
+        </div>
+        <div class="plan-card s-paid" data-manager="-" data-status="paid" data-pre="250" style="background:var(--white);border:1px solid var(--border);">
+          <div class="plan-card-top"><div class="plan-card-company">콘스탄트</div></div>
+          <div class="plan-card-meta"><span class="amt">5.0억</span><span class="amt-badge kiips">KiiPS 확정</span><span class="pre">Pre 250억</span></div>
+          <div class="plan-card-dates"><div class="dt"><span class="dt-label">납입</span><span class="dt-val">2026-02-10</span></div></div>
+          <div class="plan-card-tags"><span class="tag tag-paid">납입완료</span><span class="tag tag-2025">25년 계획</span></div>
+        </div>
+        <div class="plan-card s-paid" data-manager="-" data-status="paid" data-pre="220" style="background:var(--white);border:1px solid var(--border);">
+          <div class="plan-card-top"><div class="plan-card-company">아헤스</div></div>
+          <div class="plan-card-meta"><span class="amt">5.0억</span><span class="amt-badge kiips">KiiPS 확정</span><span class="pre">Pre 220억</span></div>
+          <div class="plan-card-dates"><div class="dt"><span class="dt-label">납입</span><span class="dt-val">2026-02-13</span></div></div>
+          <div class="plan-card-tags"><span class="tag tag-paid">납입완료</span><span class="tag tag-2025">25년 계획</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ===== VIEW: 투심위 ===== -->
+    <div id="view-tsw" class="view">
+
+      <!-- 서브탭 -->
+      <div class="tsw-subtabs">
+        <button class="tsw-subtab active" onclick="switchTswTab('rounds',this)">📋 차수별 현황</button>
+        <button class="tsw-subtab" onclick="switchTswTab('members',this)">👥 현 임기 위원</button>
+        <button class="tsw-subtab" onclick="switchTswTab('pool',this)">🗄 위원 후보 풀</button>
+        <button class="tsw-subtab" onclick="switchTswTab('annual',this)">📊 연간 운영 결과</button>
+      </div>
+
+      <!-- 서브뷰: 차수별 현황 -->
+      <div id="tsw-sub-rounds" class="tsw-subview active">
+
+        <!-- 현 임기 위원 미니 카드 (직접투자분과) -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;">
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:2px;padding:10px 12px;border-left:3px solid var(--black);">
+            <div style="font-size:9px;color:var(--text3);font-weight:700;letter-spacing:.5px;margin-bottom:4px;">내부 · 위원장</div>
+            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;">박영훈</div>
+            <div style="font-size:10px;color:var(--text3);">디캠프 · 대표이사</div>
+            <div style="display:flex;gap:8px;margin-top:6px;font-size:10px;">
+              <span style="color:var(--success);font-weight:700;">참석 3</span>
+              <span style="color:var(--text3);">제척 0</span>
+              <span style="color:var(--success);font-weight:700;">100%</span>
+            </div>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:2px;padding:10px 12px;border-left:3px solid var(--black);">
+            <div style="font-size:9px;color:var(--text3);font-weight:700;letter-spacing:.5px;margin-bottom:4px;">내부</div>
+            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;">김보미</div>
+            <div style="font-size:10px;color:var(--text3);">디캠프 · 사업실장</div>
+            <div style="display:flex;gap:8px;margin-top:6px;font-size:10px;">
+              <span style="color:var(--success);font-weight:700;">참석 3</span>
+              <span style="color:var(--text3);">제척 0</span>
+              <span style="color:var(--success);font-weight:700;">100%</span>
+            </div>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:2px;padding:10px 12px;border-left:3px solid var(--orange);">
+            <div style="font-size:9px;color:var(--orange);font-weight:700;letter-spacing:.5px;margin-bottom:4px;">투자전문</div>
+            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;">송은강</div>
+            <div style="font-size:10px;color:var(--text3);">캡스톤파트너스</div>
+            <div style="display:flex;gap:8px;margin-top:6px;font-size:10px;">
+              <span style="color:var(--warn);font-weight:700;">참석 2</span>
+              <span style="color:var(--text3);">제척 0</span>
+              <span style="color:var(--warn);font-weight:700;">67%</span>
+            </div>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:2px;padding:10px 12px;border-left:3px solid var(--orange);">
+            <div style="font-size:9px;color:var(--orange);font-weight:700;letter-spacing:.5px;margin-bottom:4px;">투자전문</div>
+            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;">신덕준</div>
+            <div style="font-size:10px;color:var(--text3);">한국투자파트너스</div>
+            <div style="display:flex;gap:8px;margin-top:6px;font-size:10px;">
+              <span style="color:var(--warn);font-weight:700;">참석 2</span>
+              <span style="color:var(--warn);">제척 1</span>
+              <span style="color:var(--warn);font-weight:700;">67%</span>
+            </div>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:2px;padding:10px 12px;border-left:3px solid var(--orange);">
+            <div style="font-size:9px;color:var(--orange);font-weight:700;letter-spacing:.5px;margin-bottom:4px;">투자전문</div>
+            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;">안신영</div>
+            <div style="font-size:10px;color:var(--text3);">에이스톤벤처스</div>
+            <div style="display:flex;gap:8px;margin-top:6px;font-size:10px;">
+              <span style="color:var(--warn);font-weight:700;">참석 2</span>
+              <span style="color:var(--text3);">제척 0</span>
+              <span style="color:var(--warn);font-weight:700;">67%</span>
+            </div>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:2px;padding:10px 12px;border-left:3px solid var(--orange);">
+            <div style="font-size:9px;color:var(--orange);font-weight:700;letter-spacing:.5px;margin-bottom:4px;">투자전문</div>
+            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;">유승운</div>
+            <div style="font-size:10px;color:var(--text3);">스톤브릿지</div>
+            <div style="display:flex;gap:8px;margin-top:6px;font-size:10px;">
+              <span style="color:var(--danger);font-weight:700;">참석 1</span>
+              <span style="color:var(--text3);">제척 0</span>
+              <span style="color:var(--danger);font-weight:700;">33%</span>
+            </div>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:2px;padding:10px 12px;border-left:3px solid var(--orange);">
+            <div style="font-size:9px;color:var(--orange);font-weight:700;letter-spacing:.5px;margin-bottom:4px;">투자전문</div>
+            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;">이강수</div>
+            <div style="font-size:10px;color:var(--text3);">컴퍼니케이파트너스</div>
+            <div style="display:flex;gap:8px;margin-top:6px;font-size:10px;">
+              <span style="color:var(--success);font-weight:700;">참석 3</span>
+              <span style="color:var(--warn);">제척 2</span>
+              <span style="color:var(--success);font-weight:700;">100%</span>
+            </div>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:2px;padding:10px 12px;border-left:3px solid var(--orange);">
+            <div style="font-size:9px;color:var(--orange);font-weight:700;letter-spacing:.5px;margin-bottom:4px;">투자전문</div>
+            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;">하태훈</div>
+            <div style="font-size:10px;color:var(--text3);">위벤처스</div>
+            <div style="display:flex;gap:8px;margin-top:6px;font-size:10px;">
+              <span style="color:var(--warn);font-weight:700;">참석 2</span>
+              <span style="color:var(--text3);">제척 0</span>
+              <span style="color:var(--warn);font-weight:700;">67%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="algo-box">
+          <div class="algo-icon">🏛</div>
+          <div class="algo-text">
+            <b>연결 구조:</b> 투자 계획에서 <span class="k">상정 확정</span>된 딜이 자동으로 안건으로 상승합니다.
+            일시·장소는 <span class="k">+ 개최 등록</span>으로 확정하고, 안건은 자동 편성된 목록을 검토 후 확정합니다.
+            결과 입력 시 투자 계획 보드 카드 상태가 연동 업데이트됩니다.
+          </div>
+        </div>
+
+        <button class="btn-new-tsw" onclick="openNewTswModal()">
+          ＋ 신규 개최 등록
+          <span style="font-size:10px;color:var(--text3);font-weight:400;">· 일시·장소 확정 후 안건 자동 편성</span>
+        </button>
+
+        <div class="tsw-sessions">
+
+          <!-- 6차 (초안 — 자동 편성 예시) -->
+          <div class="tsw-session draft">
+            <div class="tsw-head" style="cursor:default;">
+              <div class="tsw-round">6차</div>
+              <div class="tsw-date" style="color:var(--text3);">일시 미확정 · 5~6월 예정</div>
+              <div class="tsw-status draft">초안</div>
+              <div class="tsw-meta">
+                <span>분과 <b>직접투자</b></span>
+                <span>자동편성 안건 <b>4</b>건</span>
+                <span style="color:var(--warn);font-size:11px;">⚠ 일시 확정 필요</span>
+                <button class="btn-mini primary" onclick="openNewTswModal()" style="margin-left:8px;">일시 확정</button>
+              </div>
+            </div>
+            <div>
+              <div class="tsw-agenda header">
+                <div>호</div><div>기업명</div><div>형태</div><div>투자금</div><div>Pre</div><div>결의</div><div>상태</div><div></div>
+              </div>
+              <div class="tsw-agenda" style="background:#FAFAF9;">
+                <div class="ag-no" style="color:var(--text3);">1호</div>
+                <div class="ag-company">서울다이나믹스<span class="from">← 5월 계획 · 김한솔 · 자동편성</span></div>
+                <div class="ag-form">RCPS</div>
+                <div class="ag-amt">5.0억 <span class="amt-badge provisional">계획 잠정</span></div>
+                <div class="ag-pre">-</div>
+                <div class="ag-form">대면</div>
+                <div><span class="tag tag-review" style="font-size:9px;">검토중</span></div>
+                <div class="ag-action"><button class="btn-mini">상세</button></div>
+              </div>
+              <div class="tsw-agenda" style="background:#FAFAF9;">
+                <div class="ag-no" style="color:var(--text3);">2호</div>
+                <div class="ag-company">MPNX<span class="from">← 5월 계획 · 이인호 · 자동편성</span></div>
+                <div class="ag-form">RCPS</div>
+                <div class="ag-amt">2.0억 <span class="amt-badge provisional">계획 잠정</span></div>
+                <div class="ag-pre">-</div>
+                <div class="ag-form">대면</div>
+                <div><span class="tag tag-review" style="font-size:9px;">검토중</span></div>
+                <div class="ag-action"><button class="btn-mini">상세</button></div>
+              </div>
+              <div class="tsw-agenda" style="background:#FAFAF9;">
+                <div class="ag-no" style="color:var(--text3);">3호</div>
+                <div class="ag-company">레오스페이스<span class="from">← 5월 계획 · 김영상 · 자동편성</span></div>
+                <div class="ag-form">RCPS</div>
+                <div class="ag-amt">10.0억 <span class="amt-badge provisional">계획 잠정</span></div>
+                <div class="ag-pre">-</div>
+                <div class="ag-form">대면</div>
+                <div><span class="tag tag-review" style="font-size:9px;">검토중</span></div>
+                <div class="ag-action"><button class="btn-mini">상세</button></div>
+              </div>
+              <div class="tsw-agenda" style="background:#FAFAF9;">
+                <div class="ag-no" style="color:var(--text3);">4호</div>
+                <div class="ag-company">JJ&amp;COMPANIES<span class="from">← 5월 계획 · 김영상 · 자동편성</span></div>
+                <div class="ag-form">RCPS</div>
+                <div class="ag-amt">10.0억 <span class="amt-badge provisional">계획 잠정</span></div>
+                <div class="ag-pre">-</div>
+                <div class="ag-form">대면</div>
+                <div><span class="tag tag-review" style="font-size:9px;">검토중</span></div>
+                <div class="ag-action"><button class="btn-mini">상세</button></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5차 예정 -->
+          <div class="tsw-session upcoming">
+            <div class="tsw-head" style="cursor:pointer;" onclick="toggleVoteDetail('detail-5')">
+              <div class="tsw-round">5차</div>
+              <div class="tsw-date">2026-04-23 (목) 10:00 · 디캠프 선릉 6층 세미나실</div>
+              <div class="tsw-status upcoming">예정</div>
+              <div class="tsw-meta"><span>분과 <b>직접투자</b></span><span>안건 <b>4</b>건</span><span>투자금 <b>27.5억</b></span><button class="btn-mini primary" onclick="openResultModal()" style="margin-left:6px;">📝 결과 입력</button><span style="color:var(--text3);font-size:10px;margin-left:4px;">▼ 찬반 상세</span></div>
+            </div>
+            <div>
+              <div class="tsw-agenda header">
+                <div>호</div><div>기업명</div><div>형태</div><div>투자금</div><div>Pre</div><div>결의</div><div>납입상태</div><div></div>
+              </div>
+              <div class="tsw-agenda"><div class="ag-no">1호</div><div class="ag-company">위드로봇<span class="from">← 4월 계획 · 김한솔</span></div><div class="ag-form">RCPS</div><div class="ag-amt">9.99억 <span class="amt-badge provisional">계획 잠정</span></div><div class="ag-pre">340억</div><div class="ag-form">대면</div><div><span class="tag tag-confirmed" style="font-size:9px;">투심위 대기</span></div><div class="ag-action"><button class="btn-mini">상세</button></div></div>
+              <div class="tsw-agenda"><div class="ag-no">2호</div><div class="ag-company">에너테크<span class="from">← 4월 계획 · 김영상</span></div><div class="ag-form">RCPS</div><div class="ag-amt">9.99억 <span class="amt-badge provisional">계획 잠정</span></div><div class="ag-pre">360억</div><div class="ag-form">대면</div><div><span class="tag tag-confirmed" style="font-size:9px;">투심위 대기</span></div><div class="ag-action"><button class="btn-mini">상세</button></div></div>
+              <div class="tsw-agenda"><div class="ag-no">3호</div><div class="ag-company">딥포인트<span class="from">← 4월 계획 · 이은정</span></div><div class="ag-form">RCPS</div><div class="ag-amt">5.00억 <span class="amt-badge provisional">계획 잠정</span></div><div class="ag-pre">304억</div><div class="ag-form">대면</div><div><span class="tag tag-confirmed" style="font-size:9px;">투심위 대기</span></div><div class="ag-action"><button class="btn-mini">상세</button></div></div>
+              <div class="tsw-agenda"><div class="ag-no">4호</div><div class="ag-company">테솔로<span class="from">← 4월 계획 · 김한솔 · 후속</span></div><div class="ag-form">RCPS</div><div class="ag-amt">2.50억 <span class="amt-badge provisional">계획 잠정</span></div><div class="ag-pre">104억</div><div class="ag-form">서면</div><div><span class="tag tag-confirmed" style="font-size:9px;">투심위 대기</span></div><div class="ag-action"><button class="btn-mini">상세</button></div></div>
+            </div>
+            <!-- 찬반 상세 (접힘) -->
+            <div id="detail-5" style="display:none;border-top:1px solid var(--border);padding:12px 18px;background:#FAFAF9;">
+              <div style="font-size:11px;color:var(--text3);text-align:center;padding:12px;">아직 개최 전입니다. 결과 입력 후 찬반 상세가 표시됩니다.</div>
+            </div>
+          </div>
+
+          <!-- 4차 완료 -->
+          <div class="tsw-session past">
+            <div class="tsw-head" style="cursor:pointer;" onclick="toggleVoteDetail('detail-4')">
+              <div class="tsw-round">4차</div>
+              <div class="tsw-date">2026-03-25 (수) · 디캠프 선릉 1층 E회의실</div>
+              <div class="tsw-status past">완료</div>
+              <div class="tsw-meta"><span>분과 <b>직접투자</b></span><span>안건 <b>3</b>건</span><span>참석 <b>6/8인 (75%)</b></span><span>평균 동의율 <b style="color:var(--success)">100%</b></span><span style="color:var(--text3);font-size:10px;">▼ 찬반 상세</span></div>
+            </div>
+            <div>
+              <div class="tsw-agenda header"><div>호</div><div>기업명</div><div>형태</div><div>투자금</div><div>Pre</div><div>결과</div><div>납입</div><div></div></div>
+              <div class="tsw-agenda"><div class="ag-no muted">1호</div><div class="ag-company">비즈<span class="from">← 3월 계획 · 김영상</span></div><div class="ag-form">RCPS</div><div class="ag-amt">9.99억 <span class="amt-badge provisional">계획 잠정</span></div><div class="ag-pre">466억</div><div class="ag-result"><span class="tag tag-paid">가결 100%</span></div><div><span class="tag tag-pending">납입대기</span></div><div class="ag-action"><button class="btn-mini">상세</button></div></div>
+              <div class="tsw-agenda" style="opacity:.5;"><div class="ag-no muted">2호</div><div class="ag-company">에스엔디스플레이<span class="from">← 3월 계획 · 김영상 (취하)</span></div><div class="ag-form">RCPS</div><div class="ag-amt">10.0억</div><div class="ag-pre">351억</div><div class="ag-result"><span class="tag tag-withdrawn">취하·기업거절</span></div><div>-</div><div class="ag-action"><button class="btn-mini">상세</button></div></div>
+              <div class="tsw-agenda"><div class="ag-no muted">3호</div><div class="ag-company">웨이크<span class="from">← 3월 계획 · 이은정</span></div><div class="ag-form">RCPS</div><div class="ag-amt">10.0억 <span class="amt-badge kiips">KiiPS 확정</span></div><div class="ag-pre">160억</div><div class="ag-result"><span class="tag tag-paid">가결 100%</span></div><div><span class="tag tag-paid">납입완료 04.01</span></div><div class="ag-action"><button class="btn-mini">상세</button></div></div>
+            </div>
+            <!-- 4차 찬반 상세 -->
+            <div id="detail-4" style="display:none;border-top:1px solid var(--border);padding:14px 18px;background:#FAFAF9;">
+              <div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.7px;text-transform:uppercase;margin-bottom:10px;">위원별 찬반 현황 · 4차 (2026-03-25)</div>
+              <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">
+                참석: 박영훈·김보미·송은강·<b style="color:var(--warn)">송영돈(유승운 대리)</b>·이강수·하태훈 (6명)
+                &nbsp;|&nbsp; 불참: 신덕준·안신영
+              </div>
+              <div class="vote-table-wrap">
+                <table class="vote-table">
+                  <thead>
+                    <tr>
+                      <th class="agenda-col">안건</th>
+                      <th>박영훈</th><th>김보미</th><th>송은강</th><th>송영돈<span class="proxy-note">유승운 대리</span></th>
+                      <th>신덕준<span class="proxy-note">불참</span></th><th>안신영<span class="proxy-note">불참</span></th>
+                      <th>이강수</th><th>하태훈</th>
+                      <th>찬/반</th><th>동의율</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="agenda-name">1호 · 비즈</td>
+                      <td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip absent">-</span></td>
+                      <td><span class="vote-chip absent">-</span></td>
+                      <td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip yes">O</span></td>
+                      <td class="result-cell" style="color:var(--success)">6 / 0</td>
+                      <td class="result-cell" style="color:var(--success)">100%</td>
+                    </tr>
+                    <tr style="opacity:.5;">
+                      <td class="agenda-name">2호 · 에스엔디스플레이 <span class="tag tag-withdrawn" style="font-size:9px;">취하</span></td>
+                      <td colspan="10" style="text-align:center;color:var(--text3);font-size:10px;">안건 취하 (기업 거절) — 의결 없음</td>
+                    </tr>
+                    <tr>
+                      <td class="agenda-name">3호 · 웨이크</td>
+                      <td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip excl">제척</span></td>
+                      <td><span class="vote-chip absent">-</span></td>
+                      <td><span class="vote-chip absent">-</span></td>
+                      <td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip yes">O</span></td>
+                      <td class="result-cell" style="color:var(--success)">5 / 0</td>
+                      <td class="result-cell" style="color:var(--success)">100%</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3차 완료 -->
+          <div class="tsw-session past">
+            <div class="tsw-head" style="cursor:pointer;" onclick="toggleVoteDetail('detail-3')">
+              <div class="tsw-round">3차</div>
+              <div class="tsw-date">2026-02-25 (수) · 디캠프 선릉 6층 세미나실</div>
+              <div class="tsw-status past">완료</div>
+              <div class="tsw-meta"><span>분과 <b>직접투자</b></span><span>안건 <b>4</b>건</span><span>참석 <b>6/8인 (75%)</b></span><span>평균 동의율 <b style="color:var(--warn)">83.3%</b></span><span style="color:var(--text3);font-size:10px;">▼ 찬반 상세</span></div>
+            </div>
+            <div>
+              <div class="tsw-agenda header"><div>호</div><div>기업명</div><div>형태</div><div>투자금</div><div>Pre</div><div>결과</div><div>납입</div><div></div></div>
+              <div class="tsw-agenda" style="opacity:.55;"><div class="ag-no muted">1호</div><div class="ag-company">그린다<span class="from">← 2월 계획 · 김영상 (부결)</span></div><div class="ag-form">RCPS</div><div class="ag-amt">5.0억</div><div class="ag-pre">249억</div><div class="ag-result"><span class="tag tag-rejected">부결 33.3%</span></div><div>-</div><div class="ag-action"><button class="btn-mini">상세</button></div></div>
+              <div class="tsw-agenda"><div class="ag-no muted">2호</div><div class="ag-company">스텝랩<span class="from">← 2월 계획 · 이인호</span></div><div class="ag-form">RCPS</div><div class="ag-amt">10.0억 <span class="amt-badge provisional">계획 잠정</span></div><div class="ag-pre">360억</div><div class="ag-result"><span class="tag tag-paid">가결 100%</span></div><div><span class="tag tag-pending">납입대기</span></div><div class="ag-action"><button class="btn-mini">상세</button></div></div>
+              <div class="tsw-agenda"><div class="ag-no muted">3호</div><div class="ag-company">인터그래비티<span class="from">← 2월 계획 · 이은정</span></div><div class="ag-form">RCPS</div><div class="ag-amt">10.0억 <span class="amt-badge kiips">KiiPS 확정</span></div><div class="ag-pre">300억</div><div class="ag-result"><span class="tag tag-paid">가결 100%</span></div><div><span class="tag tag-paid">납입완료 03.13</span></div><div class="ag-action"><button class="btn-mini">상세</button></div></div>
+              <div class="tsw-agenda"><div class="ag-no muted">4호</div><div class="ag-company">23세기아이들<span class="from">← 2월 계획 · 이인호</span></div><div class="ag-form">RCPS</div><div class="ag-amt">5.0억 <span class="amt-badge provisional">계획 잠정</span></div><div class="ag-pre">180억</div><div class="ag-result"><span class="tag tag-paid">가결 100%</span></div><div><span class="tag tag-pending">납입대기</span></div><div class="ag-action"><button class="btn-mini">상세</button></div></div>
+            </div>
+            <!-- 3차 찬반 상세 -->
+            <div id="detail-3" style="display:none;border-top:1px solid var(--border);padding:14px 18px;background:#FAFAF9;">
+              <div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.7px;text-transform:uppercase;margin-bottom:10px;">위원별 찬반 현황 · 3차 (2026-02-25)</div>
+              <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">
+                참석: 박영훈·김보미·신덕준·송은강·안신영·이강수 (6명) &nbsp;|&nbsp; 불참: 유승운·하태훈
+              </div>
+              <div class="vote-table-wrap">
+                <table class="vote-table">
+                  <thead>
+                    <tr>
+                      <th class="agenda-col">안건</th>
+                      <th>박영훈</th><th>김보미</th><th>신덕준</th><th>송은강</th><th>안신영</th><th>이강수</th>
+                      <th>유승운<span class="proxy-note">불참</span></th><th>하태훈<span class="proxy-note">불참</span></th>
+                      <th>찬/반</th><th>동의율</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr style="background:rgba(214,48,48,.03);">
+                      <td class="agenda-name">1호 · 그린다 <span class="tag tag-rejected" style="font-size:9px;">부결</span></td>
+                      <td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip no">X</span></td>
+                      <td><span class="vote-chip no">X</span></td>
+                      <td><span class="vote-chip no">X</span></td>
+                      <td><span class="vote-chip no">X</span></td>
+                      <td><span class="vote-chip absent">-</span></td>
+                      <td><span class="vote-chip absent">-</span></td>
+                      <td class="result-cell" style="color:var(--danger)">2 / 4</td>
+                      <td class="result-cell" style="color:var(--danger)">33.3%</td>
+                    </tr>
+                    <tr>
+                      <td class="agenda-name">2호 · 스텝랩</td>
+                      <td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip excl">제척</span></td>
+                      <td><span class="vote-chip absent">-</span></td>
+                      <td><span class="vote-chip absent">-</span></td>
+                      <td class="result-cell" style="color:var(--success)">5 / 0</td>
+                      <td class="result-cell" style="color:var(--success)">100%</td>
+                    </tr>
+                    <tr>
+                      <td class="agenda-name">3호 · 인터그래비티</td>
+                      <td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip excl">제척</span></td>
+                      <td><span class="vote-chip absent">-</span></td>
+                      <td><span class="vote-chip absent">-</span></td>
+                      <td class="result-cell" style="color:var(--success)">5 / 0</td>
+                      <td class="result-cell" style="color:var(--success)">100%</td>
+                    </tr>
+                    <tr>
+                      <td class="agenda-name">4호 · 23세기아이들</td>
+                      <td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip excl">제척</span></td>
+                      <td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip absent">-</span></td>
+                      <td><span class="vote-chip absent">-</span></td>
+                      <td class="result-cell" style="color:var(--success)">5 / 0</td>
+                      <td class="result-cell" style="color:var(--success)">100%</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- 1차 완료 -->
+          <div class="tsw-session past">
+            <div class="tsw-head" style="cursor:pointer;" onclick="toggleVoteDetail('detail-1')">
+              <div class="tsw-round">1차</div>
+              <div class="tsw-date">2026-01-22 (목) · 디캠프 선릉 6층 세미나실</div>
+              <div class="tsw-status past">완료</div>
+              <div class="tsw-meta"><span>분과 <b>직접투자</b></span><span>안건 <b>4</b>건</span><span>참석 <b>6/8인 (75%)</b></span><span>평균 동의율 <b style="color:var(--warn)">83.3%</b></span><span style="color:var(--text3);font-size:10px;">▼ 찬반 상세</span></div>
+            </div>
+            <div>
+              <div class="tsw-agenda header"><div>호</div><div>기업명</div><div>형태</div><div>투자금</div><div>Pre</div><div>결과</div><div>납입</div><div></div></div>
+              <div class="tsw-agenda"><div class="ag-no muted">1호</div><div class="ag-company">루트릭스<span class="from">← 1월 계획 · 이인호</span></div><div class="ag-form">RCPS</div><div class="ag-amt">3.0억 <span class="amt-badge kiips">KiiPS 확정</span></div><div class="ag-pre">150억</div><div class="ag-result"><span class="tag tag-paid">가결 100%</span></div><div><span class="tag tag-paid">납입완료 01.27</span></div><div class="ag-action"><button class="btn-mini">상세</button></div></div>
+              <div class="tsw-agenda"><div class="ag-no muted">2호</div><div class="ag-company">아이메디텍<span class="from">← 1월 계획 · 이은정</span></div><div class="ag-form">RCPS</div><div class="ag-amt">5.0억 <span class="amt-badge kiips">KiiPS 확정</span></div><div class="ag-pre">180억</div><div class="ag-result"><span class="tag tag-paid">가결 100%</span></div><div><span class="tag tag-paid">납입완료 02.03</span></div><div class="ag-action"><button class="btn-mini">상세</button></div></div>
+              <div class="tsw-agenda"><div class="ag-no muted">3호</div><div class="ag-company">바인드<span class="from">← 1월 계획 · 이은정 · 후속</span></div><div class="ag-form">RCPS</div><div class="ag-amt">5.0억 <span class="amt-badge kiips">KiiPS 확정</span></div><div class="ag-pre">370억</div><div class="ag-result"><span class="tag tag-paid">가결 100%</span></div><div><span class="tag tag-paid">납입완료 02.23</span></div><div class="ag-action"><button class="btn-mini">상세</button></div></div>
+              <div class="tsw-agenda"><div class="ag-no muted">4호</div><div class="ag-company">그리네타<span class="from">← 1월 계획 · 김영상</span></div><div class="ag-form">RCPS</div><div class="ag-amt">2.0억 <span class="amt-badge kiips">KiiPS 확정</span></div><div class="ag-pre"><span class="early">50억 ●</span></div><div class="ag-result"><span class="tag tag-paid">가결 100%</span></div><div><span class="tag tag-paid">납입완료 02.25</span></div><div class="ag-action"><button class="btn-mini">상세</button></div></div>
+            </div>
+            <!-- 1차 찬반 상세 -->
+            <div id="detail-1" style="display:none;border-top:1px solid var(--border);padding:14px 18px;background:#FAFAF9;">
+              <div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.7px;text-transform:uppercase;margin-bottom:10px;">위원별 찬반 현황 · 1차 (2026-01-22)</div>
+              <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">
+                참석: 박영훈·김보미·신덕준·안신영·이강수·하태훈 (6명) &nbsp;|&nbsp; 불참: 송은강·유승운
+              </div>
+              <div class="vote-table-wrap">
+                <table class="vote-table">
+                  <thead>
+                    <tr>
+                      <th class="agenda-col">안건</th>
+                      <th>박영훈</th><th>김보미</th><th>신덕준</th><th>안신영</th><th>이강수</th><th>하태훈</th>
+                      <th>송은강<span class="proxy-note">불참</span></th><th>유승운<span class="proxy-note">불참</span></th>
+                      <th>찬/반</th><th>동의율</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="agenda-name">1호 · 루트릭스</td>
+                      <td><span class="vote-chip yes">O</span></td><td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip yes">O</span></td><td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip yes">O</span></td><td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip absent">-</span></td><td><span class="vote-chip absent">-</span></td>
+                      <td class="result-cell" style="color:var(--success)">6 / 0</td><td class="result-cell" style="color:var(--success)">100%</td>
+                    </tr>
+                    <tr>
+                      <td class="agenda-name">2호 · 아이메디텍</td>
+                      <td><span class="vote-chip yes">O</span></td><td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip excl">제척</span></td><td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip yes">O</span></td><td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip absent">-</span></td><td><span class="vote-chip absent">-</span></td>
+                      <td class="result-cell" style="color:var(--success)">5 / 0</td><td class="result-cell" style="color:var(--success)">100%</td>
+                    </tr>
+                    <tr>
+                      <td class="agenda-name">3호 · 바인드</td>
+                      <td><span class="vote-chip yes">O</span></td><td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip yes">O</span></td><td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip excl">제척</span></td><td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip absent">-</span></td><td><span class="vote-chip absent">-</span></td>
+                      <td class="result-cell" style="color:var(--success)">5 / 0</td><td class="result-cell" style="color:var(--success)">100%</td>
+                    </tr>
+                    <tr>
+                      <td class="agenda-name">4호 · 그리네타</td>
+                      <td><span class="vote-chip yes">O</span></td><td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip yes">O</span></td><td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip yes">O</span></td><td><span class="vote-chip yes">O</span></td>
+                      <td><span class="vote-chip absent">-</span></td><td><span class="vote-chip absent">-</span></td>
+                      <td class="result-cell" style="color:var(--success)">6 / 0</td><td class="result-cell" style="color:var(--success)">100%</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 서브뷰: 현 임기 위원 -->
+      <div id="tsw-sub-members" class="tsw-subview">
+
+        <div class="sect-title"><span class="bar"></span>현재 임기 위원 · 직접투자분과 <span class="cnt">· 임기 2025.01.01 ~ 2027.12.31</span></div>
+
+        <div class="member-grid">
+          <!-- 내부위원 -->
+          <div class="member-card internal">
+            <span class="member-badge internal">내부위원 · 위원장</span>
+            <div class="member-name">박영훈</div>
+            <div class="member-org">디캠프 · 대표이사</div>
+            <div class="member-stats">
+              <div class="member-stat"><div class="member-stat-num green">3</div><div class="member-stat-label">참석</div></div>
+              <div class="member-stat"><div class="member-stat-num orange">0</div><div class="member-stat-label">제척</div></div>
+              <div class="member-stat"><div class="member-stat-num green">100%</div><div class="member-stat-label">참석률</div></div>
+            </div>
+            <div class="member-term"><b>임기:</b> 대표이사 임기 만료 시까지</div>
+          </div>
+
+          <div class="member-card internal">
+            <span class="member-badge internal">내부위원</span>
+            <div class="member-name">김보미</div>
+            <div class="member-org">디캠프 · 사업실장</div>
+            <div class="member-stats">
+              <div class="member-stat"><div class="member-stat-num green">3</div><div class="member-stat-label">참석</div></div>
+              <div class="member-stat"><div class="member-stat-num orange">0</div><div class="member-stat-label">제척</div></div>
+              <div class="member-stat"><div class="member-stat-num green">100%</div><div class="member-stat-label">참석률</div></div>
+            </div>
+            <div class="member-term"><b>임기:</b> 2025.01.01 ~ 2027.12.31</div>
+          </div>
+
+          <!-- 외부위원 -->
+          <div class="member-card external">
+            <span class="member-badge external">투자전문위원</span>
+            <div class="member-name">송은강</div>
+            <div class="member-org">캡스톤파트너스 · 대표</div>
+            <div class="member-stats">
+              <div class="member-stat"><div class="member-stat-num green">2</div><div class="member-stat-label">참석</div></div>
+              <div class="member-stat"><div class="member-stat-num orange">0</div><div class="member-stat-label">제척</div></div>
+              <div class="member-stat"><div class="member-stat-num warn">67%</div><div class="member-stat-label">참석률</div></div>
+            </div>
+            <div class="member-term"><b>임기:</b> 2025.01.01 ~ 2027.12.31 &nbsp;|&nbsp; <b>참석횟수:</b> 5회</div>
+          </div>
+
+          <div class="member-card external">
+            <span class="member-badge external">투자전문위원</span>
+            <div class="member-name">신덕준</div>
+            <div class="member-org">한국투자파트너스 · 상무</div>
+            <div class="member-stats">
+              <div class="member-stat"><div class="member-stat-num warn">2</div><div class="member-stat-label">참석</div></div>
+              <div class="member-stat"><div class="member-stat-num warn">1</div><div class="member-stat-label">제척</div></div>
+              <div class="member-stat"><div class="member-stat-num warn">67%</div><div class="member-stat-label">참석률</div></div>
+            </div>
+            <div class="member-term"><b>임기:</b> 2025.01.01 ~ 2027.12.31 &nbsp;|&nbsp; <b>참석횟수:</b> 6회</div>
+          </div>
+
+          <div class="member-card external">
+            <span class="member-badge external">투자전문위원</span>
+            <div class="member-name">안신영</div>
+            <div class="member-org">에이스톤벤처스 · 대표</div>
+            <div class="member-stats">
+              <div class="member-stat"><div class="member-stat-num warn">2</div><div class="member-stat-label">참석</div></div>
+              <div class="member-stat"><div class="member-stat-num orange">0</div><div class="member-stat-label">제척</div></div>
+              <div class="member-stat"><div class="member-stat-num warn">67%</div><div class="member-stat-label">참석률</div></div>
+            </div>
+            <div class="member-term"><b>임기:</b> 2025.01.01 ~ 2027.12.31 &nbsp;|&nbsp; <b>참석횟수:</b> 7회</div>
+          </div>
+
+          <div class="member-card external">
+            <span class="member-badge external">투자전문위원</span>
+            <div class="member-name">유승운</div>
+            <div class="member-org">스톤브릿지 · 대표</div>
+            <div class="member-stats">
+              <div class="member-stat"><div class="member-stat-num warn">1</div><div class="member-stat-label">참석</div></div>
+              <div class="member-stat"><div class="member-stat-num orange">0</div><div class="member-stat-label">제척</div></div>
+              <div class="member-stat"><div class="member-stat-num" style="color:var(--danger)">33%</div><div class="member-stat-label">참석률</div></div>
+            </div>
+            <div class="member-term"><b>임기:</b> 2025.01.01 ~ 2027.12.31 &nbsp;|&nbsp; <b>참석횟수:</b> 3회</div>
+          </div>
+
+          <div class="member-card external">
+            <span class="member-badge external">투자전문위원</span>
+            <div class="member-name">이강수</div>
+            <div class="member-org">컴퍼니케이파트너스 · 대표</div>
+            <div class="member-stats">
+              <div class="member-stat"><div class="member-stat-num green">3</div><div class="member-stat-label">참석</div></div>
+              <div class="member-stat"><div class="member-stat-num warn">2</div><div class="member-stat-label">제척</div></div>
+              <div class="member-stat"><div class="member-stat-num green">100%</div><div class="member-stat-label">참석률</div></div>
+            </div>
+            <div class="member-term"><b>임기:</b> 2025.01.01 ~ 2027.12.31 &nbsp;|&nbsp; <b>참석횟수:</b> 8회</div>
+          </div>
+
+          <div class="member-card external">
+            <span class="member-badge external">투자전문위원</span>
+            <div class="member-name">하태훈</div>
+            <div class="member-org">위벤처스 · 대표</div>
+            <div class="member-stats">
+              <div class="member-stat"><div class="member-stat-num warn">2</div><div class="member-stat-label">참석</div></div>
+              <div class="member-stat"><div class="member-stat-num orange">0</div><div class="member-stat-label">제척</div></div>
+              <div class="member-stat"><div class="member-stat-num warn">67%</div><div class="member-stat-label">참석률</div></div>
+            </div>
+            <div class="member-term"><b>임기:</b> 2025.01.01 ~ 2027.12.31 &nbsp;|&nbsp; <b>참석횟수:</b> 4회</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 서브뷰: 위원 후보 풀 -->
+      <div id="tsw-sub-pool" class="tsw-subview">
+
+        <div class="algo-box">
+          <div class="algo-icon">🗄</div>
+          <div class="algo-text">
+            <b>위원 후보 풀:</b> 직접투자분과·펀드출자분과 위원 전체 풀입니다.
+            <span class="k">현 위원 선임</span> 표시는 현재 임기 위원으로 선임된 상태를 나타냅니다.
+            임기 만료 또는 신규 선임 시 이 풀에서 선택하여 임명합니다.
+          </div>
+        </div>
+
+        <!-- 필터 -->
+        <div class="filter-bar" style="margin-bottom:12px;">
+          <span class="filter-label">분과</span>
+          <button class="filter-btn active" onclick="filterPool('all',this)">전체</button>
+          <button class="filter-btn" onclick="filterPool('direct',this)">직접투자분과</button>
+          <button class="filter-btn" onclick="filterPool('fund',this)">펀드출자분과</button>
+          <div class="filter-sep"></div>
+          <span class="filter-label">구분</span>
+          <button class="filter-btn active" onclick="filterPoolType('all',this)">전체</button>
+          <button class="filter-btn" onclick="filterPoolType('internal',this)">내부위원</button>
+          <button class="filter-btn" onclick="filterPoolType('invest',this)">투자전문</button>
+          <button class="filter-btn" onclick="filterPoolType('fund',this)">출자전문</button>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
+          <button class="btn-add" onclick="openAddPoolModal()" style="font-size:11px;padding:6px 12px;">＋ 후보 추가</button>
+        </div>
+        <div style="background:var(--white);border:1px solid var(--border);border-radius:2px;overflow:hidden;">
+          <table class="pool-table">
+            <thead>
+              <tr>
+                <th>분과</th><th>구분</th><th>이름</th><th>소속</th><th>직책</th>
+                <th>임기</th><th>연임</th><th>참석횟수</th><th>우선순위</th><th>주요분야</th><th>선임 상태</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- ★ 현 위원 — 직접투자분과 -->
+              <tr class="is-current" data-group="direct" data-type="internal">
+                <td><span class="tag tag-domain">직접투자</span></td>
+                <td><span class="tag" style="background:var(--bg3);color:var(--text2);">내부</span></td>
+                <td style="font-weight:600;">박영훈</td>
+                <td style="color:var(--text2);">디캠프</td>
+                <td style="color:var(--text2);">대표이사</td>
+                <td style="color:var(--text2);font-size:11px;">~ 대표이사 임기 만료 시</td>
+                <td style="color:var(--text3);">-</td>
+                <td style="text-align:center;font-family:'Poppins',sans-serif;font-weight:700;">-</td>
+                <td class="pool-priority none">-</td>
+                <td style="color:var(--text3);">위원장</td>
+                <td><span class="current-badge">✓ 현 위원 선임</span></td>
+              </tr>
+              <tr class="is-current" data-group="direct" data-type="internal">
+                <td><span class="tag tag-domain">직접투자</span></td>
+                <td><span class="tag" style="background:var(--bg3);color:var(--text2);">내부</span></td>
+                <td style="font-weight:600;">김보미</td>
+                <td style="color:var(--text2);">디캠프</td>
+                <td style="color:var(--text2);">사업실장</td>
+                <td style="color:var(--text2);font-size:11px;">25.01.01 ~ 27.12.31</td>
+                <td style="color:var(--text3);">-</td>
+                <td style="text-align:center;font-family:'Poppins',sans-serif;font-weight:700;">-</td>
+                <td class="pool-priority none">-</td>
+                <td style="color:var(--text3);">위원</td>
+                <td><span class="current-badge">✓ 현 위원 선임</span></td>
+              </tr>
+              <tr class="is-current" data-group="direct" data-type="invest">
+                <td><span class="tag tag-domain">직접투자</span></td>
+                <td><span class="tag tag-confirmed">투자전문</span></td>
+                <td style="font-weight:600;">송은강</td>
+                <td style="color:var(--text2);">캡스톤파트너스</td>
+                <td style="color:var(--text2);">대표</td>
+                <td style="color:var(--text2);font-size:11px;">25.01.01 ~ 27.12.31</td>
+                <td style="text-align:center;">여</td>
+                <td style="text-align:center;font-family:'Poppins',sans-serif;font-weight:700;color:var(--orange);">5</td>
+                <td class="pool-priority none">현 위원</td>
+                <td style="color:var(--text3);font-size:11px;">AI, 커머스 전문</td>
+                <td><span class="current-badge">✓ 현 위원 선임</span></td>
+              </tr>
+              <tr class="is-current" data-group="direct" data-type="invest">
+                <td><span class="tag tag-domain">직접투자</span></td>
+                <td><span class="tag tag-confirmed">투자전문</span></td>
+                <td style="font-weight:600;">신덕준</td>
+                <td style="color:var(--text2);">한국투자파트너스</td>
+                <td style="color:var(--text2);">상무</td>
+                <td style="color:var(--text2);font-size:11px;">25.01.01 ~ 27.12.31</td>
+                <td style="text-align:center;">부</td>
+                <td style="text-align:center;font-family:'Poppins',sans-serif;font-weight:700;color:var(--orange);">6</td>
+                <td class="pool-priority none">현 위원</td>
+                <td style="color:var(--text3);font-size:11px;">ICT솔루션 전문</td>
+                <td><span class="current-badge">✓ 현 위원 선임</span></td>
+              </tr>
+              <tr class="is-current" data-group="direct" data-type="invest">
+                <td><span class="tag tag-domain">직접투자</span></td>
+                <td><span class="tag tag-confirmed">투자전문</span></td>
+                <td style="font-weight:600;">안신영</td>
+                <td style="color:var(--text2);">에이스톤벤처스</td>
+                <td style="color:var(--text2);">대표</td>
+                <td style="color:var(--text2);font-size:11px;">25.01.01 ~ 27.12.31</td>
+                <td style="text-align:center;">부</td>
+                <td style="text-align:center;font-family:'Poppins',sans-serif;font-weight:700;color:var(--orange);">7</td>
+                <td class="pool-priority none">현 위원</td>
+                <td style="color:var(--text3);font-size:11px;">기후테크, 헬스케어</td>
+                <td><span class="current-badge">✓ 현 위원 선임</span></td>
+              </tr>
+              <tr class="is-current" data-group="direct" data-type="invest">
+                <td><span class="tag tag-domain">직접투자</span></td>
+                <td><span class="tag tag-confirmed">투자전문</span></td>
+                <td style="font-weight:600;">유승운</td>
+                <td style="color:var(--text2);">스톤브릿지</td>
+                <td style="color:var(--text2);">대표</td>
+                <td style="color:var(--text2);font-size:11px;">25.01.01 ~ 27.12.31</td>
+                <td style="text-align:center;">부</td>
+                <td style="text-align:center;font-family:'Poppins',sans-serif;font-weight:700;color:var(--orange);">3</td>
+                <td class="pool-priority none">현 위원</td>
+                <td style="color:var(--text3);font-size:11px;">AI, 반도체, 2차전지</td>
+                <td><span class="current-badge">✓ 현 위원 선임</span></td>
+              </tr>
+              <tr class="is-current" data-group="direct" data-type="invest">
+                <td><span class="tag tag-domain">직접투자</span></td>
+                <td><span class="tag tag-confirmed">투자전문</span></td>
+                <td style="font-weight:600;">이강수</td>
+                <td style="color:var(--text2);">컴퍼니케이파트너스</td>
+                <td style="color:var(--text2);">대표</td>
+                <td style="color:var(--text2);font-size:11px;">25.01.01 ~ 27.12.31</td>
+                <td style="text-align:center;">여</td>
+                <td style="text-align:center;font-family:'Poppins',sans-serif;font-weight:700;color:var(--orange);">8</td>
+                <td class="pool-priority none">현 위원</td>
+                <td style="color:var(--text3);font-size:11px;">우주항공 융합기술</td>
+                <td><span class="current-badge">✓ 현 위원 선임</span></td>
+              </tr>
+              <tr class="is-current" data-group="direct" data-type="invest">
+                <td><span class="tag tag-domain">직접투자</span></td>
+                <td><span class="tag tag-confirmed">투자전문</span></td>
+                <td style="font-weight:600;">하태훈</td>
+                <td style="color:var(--text2);">위벤처스</td>
+                <td style="color:var(--text2);">대표</td>
+                <td style="color:var(--text2);font-size:11px;">25.01.01 ~ 27.12.31</td>
+                <td style="text-align:center;">부</td>
+                <td style="text-align:center;font-family:'Poppins',sans-serif;font-weight:700;color:var(--orange);">4</td>
+                <td class="pool-priority none">현 위원</td>
+                <td style="color:var(--text3);font-size:11px;">반도체, 소부장</td>
+                <td><span class="current-badge">✓ 현 위원 선임</span></td>
+              </tr>
+              <!-- 후보 풀 — 직접투자분과 -->
+              <tr data-group="direct" data-type="invest">
+                <td><span class="tag tag-domain">직접투자</span></td>
+                <td><span class="tag tag-confirmed">투자전문</span></td>
+                <td style="font-weight:600;">이종호</td>
+                <td style="color:var(--text2);">스마일게이트인베스트먼트</td>
+                <td style="color:var(--text2);">상무</td>
+                <td style="color:var(--text3);font-size:11px;">-</td>
+                <td style="text-align:center;color:var(--text3);">-</td>
+                <td style="text-align:center;color:var(--text3);">-</td>
+                <td class="pool-priority">1순위</td>
+                <td style="color:var(--text3);font-size:11px;">ICT솔루션 전문</td>
+                <td><button class="btn-appoint" onclick="appointMock(this,'이종호')">+ 위원 선임</button></td>
+              </tr>
+              <tr data-group="direct" data-type="invest">
+                <td><span class="tag tag-domain">직접투자</span></td>
+                <td><span class="tag tag-confirmed">투자전문</span></td>
+                <td style="font-weight:600;">문여정</td>
+                <td style="color:var(--text2);">IMM인베스트먼트</td>
+                <td style="color:var(--text2);">전무</td>
+                <td style="color:var(--text3);font-size:11px;">-</td>
+                <td style="text-align:center;color:var(--text3);">-</td>
+                <td style="text-align:center;color:var(--text3);">-</td>
+                <td class="pool-priority">2순위</td>
+                <td style="color:var(--text3);font-size:11px;">헬스케어 전문</td>
+                <td><button class="btn-appoint" onclick="appointMock(this,'문여정')">+ 위원 선임</button></td>
+              </tr>
+              <tr data-group="direct" data-type="invest">
+                <td><span class="tag tag-domain">직접투자</span></td>
+                <td><span class="tag tag-confirmed">투자전문</span></td>
+                <td style="font-weight:600;">김민규</td>
+                <td style="color:var(--text2);">한국투자파트너스</td>
+                <td style="color:var(--text2);">상무</td>
+                <td style="color:var(--text3);font-size:11px;">-</td>
+                <td style="text-align:center;color:var(--text3);">-</td>
+                <td style="text-align:center;color:var(--text3);">-</td>
+                <td class="pool-priority">2순위</td>
+                <td style="color:var(--text3);font-size:11px;">서울대 제어계측, 삼성전자</td>
+                <td><button class="btn-appoint" onclick="appointMock(this,'김민규')">+ 위원 선임</button></td>
+              </tr>
+              <tr data-group="direct" data-type="invest">
+                <td><span class="tag tag-domain">직접투자</span></td>
+                <td><span class="tag tag-confirmed">투자전문</span></td>
+                <td style="font-weight:600;">최동렬</td>
+                <td style="color:var(--text2);">스톤브릿지</td>
+                <td style="color:var(--text2);">투자부문대표</td>
+                <td style="color:var(--text3);font-size:11px;">-</td>
+                <td style="text-align:center;color:var(--text3);">-</td>
+                <td style="text-align:center;color:var(--text3);">-</td>
+                <td class="pool-priority">2순위</td>
+                <td style="color:var(--text3);font-size:11px;">반도체, 경북대 기계공학</td>
+                <td><button class="btn-appoint" onclick="appointMock(this,'최동렬')">+ 위원 선임</button></td>
+              </tr>
+              <!-- 후보 풀 — 펀드출자분과 -->
+              <tr class="is-current" data-group="fund" data-type="internal">
+                <td><span class="tag" style="background:rgba(58,111,216,.10);color:var(--info);">펀드출자</span></td>
+                <td><span class="tag" style="background:var(--bg3);color:var(--text2);">내부</span></td>
+                <td style="font-weight:600;">박영훈</td>
+                <td style="color:var(--text2);">디캠프</td>
+                <td style="color:var(--text2);">대표이사</td>
+                <td style="color:var(--text2);font-size:11px;">~ 대표이사 임기 만료 시</td>
+                <td style="text-align:center;color:var(--text3);">-</td>
+                <td style="text-align:center;color:var(--text3);">-</td>
+                <td class="pool-priority none">-</td>
+                <td style="color:var(--text3);">위원장</td>
+                <td><span class="current-badge">✓ 현 위원 선임</span></td>
+              </tr>
+              <tr class="is-current" data-group="fund" data-type="internal">
+                <td><span class="tag" style="background:rgba(58,111,216,.10);color:var(--info);">펀드출자</span></td>
+                <td><span class="tag" style="background:var(--bg3);color:var(--text2);">내부</span></td>
+                <td style="font-weight:600;">김보미</td>
+                <td style="color:var(--text2);">디캠프</td>
+                <td style="color:var(--text2);">사업실장</td>
+                <td style="color:var(--text2);font-size:11px;">25.01.01 ~ 27.12.31</td>
+                <td style="text-align:center;color:var(--text3);">-</td>
+                <td style="text-align:center;color:var(--text3);">-</td>
+                <td class="pool-priority none">-</td>
+                <td style="color:var(--text3);">위원</td>
+                <td><span class="current-badge">✓ 현 위원 선임</span></td>
+              </tr>
+              <tr class="is-current" data-group="fund" data-type="fund">
+                <td><span class="tag" style="background:rgba(58,111,216,.10);color:var(--info);">펀드출자</span></td>
+                <td><span class="tag tag-domain">출자전문</span></td>
+                <td style="font-weight:600;">노해성</td>
+                <td style="color:var(--text2);">한국성장금융</td>
+                <td style="color:var(--text2);">실장</td>
+                <td style="color:var(--text2);font-size:11px;">25.01.01 ~ 27.12.31</td>
+                <td style="text-align:center;">부</td>
+                <td style="text-align:center;font-family:'Poppins',sans-serif;font-weight:700;color:var(--orange);">4</td>
+                <td class="pool-priority none">현 위원</td>
+                <td style="color:var(--text3);font-size:11px;">성장금융 전문</td>
+                <td><span class="current-badge">✓ 현 위원 선임</span></td>
+              </tr>
+              <tr class="is-current" data-group="fund" data-type="fund">
+                <td><span class="tag" style="background:rgba(58,111,216,.10);color:var(--info);">펀드출자</span></td>
+                <td><span class="tag tag-domain">출자전문</span></td>
+                <td style="font-weight:600;">최은주</td>
+                <td style="color:var(--text2);">한국벤처투자</td>
+                <td style="color:var(--text2);">본부장</td>
+                <td style="color:var(--text2);font-size:11px;">25.01.01 ~ 27.12.31</td>
+                <td style="text-align:center;">부</td>
+                <td style="text-align:center;font-family:'Poppins',sans-serif;font-weight:700;color:var(--orange);">1</td>
+                <td class="pool-priority none">현 위원</td>
+                <td style="color:var(--text3);font-size:11px;">변호사 출신</td>
+                <td><span class="current-badge">✓ 현 위원 선임</span></td>
+              </tr>
+              <tr class="is-current" data-group="fund" data-type="fund">
+                <td><span class="tag" style="background:rgba(58,111,216,.10);color:var(--info);">펀드출자</span></td>
+                <td><span class="tag tag-domain">출자전문</span></td>
+                <td style="font-weight:600;">양우석</td>
+                <td style="color:var(--text2);">신한은행</td>
+                <td style="color:var(--text2);">부장</td>
+                <td style="color:var(--text2);font-size:11px;">24.02.13 ~ 27.02.12</td>
+                <td style="text-align:center;">여</td>
+                <td style="text-align:center;color:var(--text3);">-</td>
+                <td class="pool-priority none">현 위원</td>
+                <td style="color:var(--text3);font-size:11px;">-</td>
+                <td><span class="current-badge">✓ 현 위원 선임</span></td>
+              </tr>
+              <tr class="is-current" data-group="fund" data-type="fund">
+                <td><span class="tag" style="background:rgba(58,111,216,.10);color:var(--info);">펀드출자</span></td>
+                <td><span class="tag tag-domain">출자전문</span></td>
+                <td style="font-weight:600;">김정용</td>
+                <td style="color:var(--text2);">IBK기업은행</td>
+                <td style="color:var(--text2);">부장</td>
+                <td style="color:var(--text2);font-size:11px;">24.02.13 ~ 27.02.12</td>
+                <td style="text-align:center;">여</td>
+                <td style="text-align:center;color:var(--text3);">-</td>
+                <td class="pool-priority none">현 위원</td>
+                <td style="color:var(--text3);font-size:11px;">-</td>
+                <td><span class="current-badge">✓ 현 위원 선임</span></td>
+              </tr>
+              <tr class="is-current" data-group="fund" data-type="fund">
+                <td><span class="tag" style="background:rgba(58,111,216,.10);color:var(--info);">펀드출자</span></td>
+                <td><span class="tag tag-domain">출자전문</span></td>
+                <td style="font-weight:600;">김홍익</td>
+                <td style="color:var(--text2);">우리은행</td>
+                <td style="color:var(--text2);">부장</td>
+                <td style="color:var(--text2);font-size:11px;">24.02.13 ~ 27.02.12</td>
+                <td style="text-align:center;">여</td>
+                <td style="text-align:center;font-family:'Poppins',sans-serif;font-weight:700;color:var(--orange);">2</td>
+                <td class="pool-priority none">현 위원</td>
+                <td style="color:var(--text3);font-size:11px;">-</td>
+                <td><span class="current-badge">✓ 현 위원 선임</span></td>
+              </tr>
+              <tr class="is-current" data-group="fund" data-type="fund">
+                <td><span class="tag" style="background:rgba(58,111,216,.10);color:var(--info);">펀드출자</span></td>
+                <td><span class="tag tag-domain">출자전문</span></td>
+                <td style="font-weight:600;">김동주</td>
+                <td style="color:var(--text2);">법무법인 에이원</td>
+                <td style="color:var(--text2);">파트너 변호사</td>
+                <td style="color:var(--text2);font-size:11px;color:var(--danger);">~ 25.11.25 (만료)</td>
+                <td style="text-align:center;">여</td>
+                <td style="text-align:center;font-family:'Poppins',sans-serif;font-weight:700;color:var(--orange);">3</td>
+                <td class="pool-priority none">현 위원</td>
+                <td style="color:var(--text3);font-size:11px;">벤처 법무</td>
+                <td><span class="current-badge" style="background:rgba(214,48,48,.10);color:var(--danger);">⚠ 임기만료</span></td>
+              </tr>
+              <!-- 후보 풀 — 펀드출자분과 후보 -->
+              <tr data-group="fund" data-type="fund">
+                <td><span class="tag" style="background:rgba(58,111,216,.10);color:var(--info);">펀드출자</span></td>
+                <td><span class="tag tag-domain">출자전문</span></td>
+                <td style="font-weight:600;">김성훈</td>
+                <td style="color:var(--text2);">법무법인 미션</td>
+                <td style="color:var(--text2);">대표</td>
+                <td style="color:var(--text3);font-size:11px;">-</td>
+                <td style="text-align:center;color:var(--text3);">-</td>
+                <td style="text-align:center;color:var(--text3);">-</td>
+                <td class="pool-priority">1순위</td>
+                <td style="color:var(--text3);font-size:11px;">벤처투자 법무 전문</td>
+                <td><button class="btn-appoint" onclick="appointMock(this,'김성훈')">+ 위원 선임</button></td>
+              </tr>
+              <tr data-group="fund" data-type="fund">
+                <td><span class="tag" style="background:rgba(58,111,216,.10);color:var(--info);">펀드출자</span></td>
+                <td><span class="tag tag-domain">출자전문</span></td>
+                <td style="font-weight:600;">이상원</td>
+                <td style="color:var(--text2);">우리자산운용</td>
+                <td style="color:var(--text2);">실장</td>
+                <td style="color:var(--text3);font-size:11px;">-</td>
+                <td style="text-align:center;color:var(--text3);">-</td>
+                <td style="text-align:center;color:var(--text3);">-</td>
+                <td class="pool-priority">1순위</td>
+                <td style="color:var(--text3);font-size:11px;">성장금융 출신</td>
+                <td><button class="btn-appoint" onclick="appointMock(this,'이상원')">+ 위원 선임</button></td>
+              </tr>
+            </tbody>
+          </table>
+          <div style="padding:8px 14px;font-size:10px;color:var(--text3);background:var(--bg3);border-top:1px solid var(--border);">
+            <span style="color:rgba(26,158,87,.9);font-weight:600;">■</span> 초록 행 = 현 위원 선임 완료 &nbsp;|&nbsp;
+            <span style="color:var(--text3);">■</span> 일반 행 = 후보 풀 (미선임)
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 서브뷰: 연간 운영 결과 -->
+      <div id="tsw-sub-annual" class="tsw-subview">
+
+        <!-- 헤더 -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <div>
+            <div class="sect-title" style="margin:0;"><span class="bar"></span>2026년 투자심사위원회(직접투자분과) 운영 결과 <span class="cnt">· 1~4차 완료 기준</span></div>
+            <div style="font-size:11px;color:var(--text3);margin-top:4px;">연도 스위처로 연도 변경 가능 · 데이터 기준: KiiPS 확정값</div>
+          </div>
+          <button class="btn-ghost btn" style="font-size:11px;" onclick="showToast('보고서 출력 기능 준비 중 (목업)', 'info')">📄 보고서 출력</button>
+        </div>
+
+        <!-- KPI 요약 4개 -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;">
+          <div style="background:var(--white);border:1px solid var(--border);border-top:3px solid var(--orange);border-radius:2px;padding:14px 16px;">
+            <div style="font-size:10px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--text3);margin-bottom:6px;">총 개최 차수</div>
+            <div style="font-family:'Poppins',sans-serif;font-size:28px;font-weight:700;color:var(--orange);line-height:1;">4<span style="font-size:13px;color:var(--text3);font-weight:400;margin-left:2px;">차</span></div>
+            <div style="font-size:11px;color:var(--text3);margin-top:4px;">총 안건 11건 상정</div>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--border);border-top:3px solid var(--success);border-radius:2px;padding:14px 16px;">
+            <div style="font-size:10px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--text3);margin-bottom:6px;">가결 / 부결 / 취하</div>
+            <div style="font-family:'Poppins',sans-serif;font-size:28px;font-weight:700;line-height:1;"><span style="color:var(--success);">9</span><span style="font-size:13px;color:var(--text3);font-weight:400;"> / </span><span style="color:var(--danger);">1</span><span style="font-size:13px;color:var(--text3);font-weight:400;"> / </span><span style="color:var(--text3);">1</span></div>
+            <div style="font-size:11px;color:var(--text3);margin-top:4px;">가결률 81.8%</div>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--border);border-top:3px solid var(--info);border-radius:2px;padding:14px 16px;">
+            <div style="font-size:10px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--text3);margin-bottom:6px;">평균 참석률</div>
+            <div style="font-family:'Poppins',sans-serif;font-size:28px;font-weight:700;color:var(--info);line-height:1;">75<span style="font-size:13px;font-weight:400;">%</span></div>
+            <div style="font-size:11px;color:var(--text3);margin-top:4px;">평균 6/8인 참석</div>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--border);border-top:3px solid var(--success);border-radius:2px;padding:14px 16px;">
+            <div style="font-size:10px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--text3);margin-bottom:6px;">평균 동의율</div>
+            <div style="font-family:'Poppins',sans-serif;font-size:28px;font-weight:700;color:var(--success);line-height:1;">91<span style="font-size:13px;font-weight:400;">%</span></div>
+            <div style="font-size:11px;color:var(--text3);margin-top:4px;">부결 1건(33.3%) 포함</div>
+          </div>
+        </div>
+
+        <!-- 2열: 차수별 현황 + 위원별 참석 -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+
+          <!-- 차수별 현황표 -->
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:2px;overflow:hidden;">
+            <div style="padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg3);font-size:11px;font-weight:700;">차수별 운영 현황</div>
+            <table style="width:100%;border-collapse:collapse;font-size:11px;">
+              <thead>
+                <tr style="background:var(--bg3);">
+                  <th style="border:1px solid var(--border);padding:6px 8px;font-weight:700;color:var(--text2);text-align:center;">차수</th>
+                  <th style="border:1px solid var(--border);padding:6px 8px;font-weight:700;color:var(--text2);text-align:center;">개최일</th>
+                  <th style="border:1px solid var(--border);padding:6px 8px;font-weight:700;color:var(--text2);text-align:center;">안건</th>
+                  <th style="border:1px solid var(--border);padding:6px 8px;font-weight:700;color:var(--text2);text-align:center;">참석</th>
+                  <th style="border:1px solid var(--border);padding:6px 8px;font-weight:700;color:var(--text2);">결과</th>
+                  <th style="border:1px solid var(--border);padding:6px 8px;font-weight:700;color:var(--text2);text-align:center;">동의율</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td style="border:1px solid var(--border);padding:6px 8px;text-align:center;font-family:'Poppins',sans-serif;font-weight:700;color:var(--orange);">1차</td><td style="border:1px solid var(--border);padding:6px 8px;text-align:center;color:var(--text2);">01.22</td><td style="border:1px solid var(--border);padding:6px 8px;text-align:center;">4건</td><td style="border:1px solid var(--border);padding:6px 8px;text-align:center;color:var(--success);font-weight:600;">6/8</td><td style="border:1px solid var(--border);padding:6px 8px;font-size:11px;"><span style="color:var(--success);font-weight:600;">가결 4</span></td><td style="border:1px solid var(--border);padding:6px 8px;text-align:center;color:var(--success);font-weight:600;">100%</td></tr>
+                <tr style="background:var(--bg);"><td style="border:1px solid var(--border);padding:6px 8px;text-align:center;font-family:'Poppins',sans-serif;font-weight:700;color:var(--orange);">3차</td><td style="border:1px solid var(--border);padding:6px 8px;text-align:center;color:var(--text2);">02.25</td><td style="border:1px solid var(--border);padding:6px 8px;text-align:center;">4건</td><td style="border:1px solid var(--border);padding:6px 8px;text-align:center;color:var(--success);font-weight:600;">6/8</td><td style="border:1px solid var(--border);padding:6px 8px;font-size:11px;"><span style="color:var(--success);">가결 3</span> / <span style="color:var(--danger);">부결 1</span></td><td style="border:1px solid var(--border);padding:6px 8px;text-align:center;color:var(--warn);font-weight:600;">83.3%</td></tr>
+                <tr><td style="border:1px solid var(--border);padding:6px 8px;text-align:center;font-family:'Poppins',sans-serif;font-weight:700;color:var(--orange);">4차</td><td style="border:1px solid var(--border);padding:6px 8px;text-align:center;color:var(--text2);">03.25</td><td style="border:1px solid var(--border);padding:6px 8px;text-align:center;">3건</td><td style="border:1px solid var(--border);padding:6px 8px;text-align:center;color:var(--success);font-weight:600;">6/8</td><td style="border:1px solid var(--border);padding:6px 8px;font-size:11px;"><span style="color:var(--success);">가결 2</span> / <span style="color:var(--text3);">취하 1</span></td><td style="border:1px solid var(--border);padding:6px 8px;text-align:center;color:var(--success);font-weight:600;">100%</td></tr>
+                <tr style="background:rgba(255,94,39,.03);"><td style="border:1px solid var(--border);padding:6px 8px;text-align:center;font-family:'Poppins',sans-serif;font-weight:700;color:var(--text3);">5차</td><td style="border:1px solid var(--border);padding:6px 8px;text-align:center;color:var(--orange);font-size:10px;">04.23 예정</td><td style="border:1px solid var(--border);padding:6px 8px;text-align:center;color:var(--text3);">4건</td><td colspan="3" style="border:1px solid var(--border);padding:6px 8px;text-align:center;color:var(--text3);font-size:10px;">투심위 진행 예정</td></tr>
+                <tr style="background:var(--bg3);font-weight:700;"><td style="border:1px solid var(--border);padding:6px 8px;text-align:center;color:var(--text2);">합계</td><td style="border:1px solid var(--border);padding:6px 8px;text-align:center;color:var(--text3);">—</td><td style="border:1px solid var(--border);padding:6px 8px;text-align:center;">11건</td><td style="border:1px solid var(--border);padding:6px 8px;text-align:center;">평균 75%</td><td style="border:1px solid var(--border);padding:6px 8px;font-size:11px;"><span style="color:var(--success);">가결 9</span> / <span style="color:var(--danger);">부결 1</span> / <span style="color:var(--text3);">취하 1</span></td><td style="border:1px solid var(--border);padding:6px 8px;text-align:center;color:var(--success);">91%</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- 위원별 참석 기여도 -->
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:2px;overflow:hidden;">
+            <div style="padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg3);font-size:11px;font-weight:700;">위원별 참석 기여도 <span style="font-size:10px;color:var(--text3);font-weight:400;">· 1~4차</span></div>
+            <div style="padding:12px 14px;display:flex;flex-direction:column;gap:8px;">
+              <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;font-weight:600;min-width:48px;">박영훈</span><span style="font-size:10px;color:var(--text3);min-width:38px;">디캠프</span><div style="flex:1;background:var(--bg3);border-radius:2px;height:8px;overflow:hidden;"><div style="width:100%;height:100%;background:var(--success);border-radius:2px;"></div></div><span style="font-size:11px;font-weight:700;color:var(--success);min-width:36px;">3/3</span><span style="font-size:10px;color:var(--success);min-width:32px;">100%</span><span style="font-size:10px;color:var(--text3);">제척 0</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;font-weight:600;min-width:48px;">김보미</span><span style="font-size:10px;color:var(--text3);min-width:38px;">디캠프</span><div style="flex:1;background:var(--bg3);border-radius:2px;height:8px;overflow:hidden;"><div style="width:100%;height:100%;background:var(--success);border-radius:2px;"></div></div><span style="font-size:11px;font-weight:700;color:var(--success);min-width:36px;">3/3</span><span style="font-size:10px;color:var(--success);min-width:32px;">100%</span><span style="font-size:10px;color:var(--text3);">제척 0</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;font-weight:600;min-width:48px;">이강수</span><span style="font-size:10px;color:var(--text3);min-width:38px;">컴퍼니케이</span><div style="flex:1;background:var(--bg3);border-radius:2px;height:8px;overflow:hidden;"><div style="width:100%;height:100%;background:var(--success);border-radius:2px;"></div></div><span style="font-size:11px;font-weight:700;color:var(--success);min-width:36px;">3/3</span><span style="font-size:10px;color:var(--success);min-width:32px;">100%</span><span style="font-size:10px;color:var(--warn);">제척 2</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;font-weight:600;min-width:48px;">송은강</span><span style="font-size:10px;color:var(--text3);min-width:38px;">캡스톤</span><div style="flex:1;background:var(--bg3);border-radius:2px;height:8px;overflow:hidden;"><div style="width:67%;height:100%;background:var(--warn);border-radius:2px;"></div></div><span style="font-size:11px;font-weight:700;color:var(--warn);min-width:36px;">2/3</span><span style="font-size:10px;color:var(--warn);min-width:32px;">67%</span><span style="font-size:10px;color:var(--text3);">제척 0</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;font-weight:600;min-width:48px;">신덕준</span><span style="font-size:10px;color:var(--text3);min-width:38px;">한국투자</span><div style="flex:1;background:var(--bg3);border-radius:2px;height:8px;overflow:hidden;"><div style="width:67%;height:100%;background:var(--warn);border-radius:2px;"></div></div><span style="font-size:11px;font-weight:700;color:var(--warn);min-width:36px;">2/3</span><span style="font-size:10px;color:var(--warn);min-width:32px;">67%</span><span style="font-size:10px;color:var(--warn);">제척 1</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;font-weight:600;min-width:48px;">안신영</span><span style="font-size:10px;color:var(--text3);min-width:38px;">에이스톤</span><div style="flex:1;background:var(--bg3);border-radius:2px;height:8px;overflow:hidden;"><div style="width:67%;height:100%;background:var(--warn);border-radius:2px;"></div></div><span style="font-size:11px;font-weight:700;color:var(--warn);min-width:36px;">2/3</span><span style="font-size:10px;color:var(--warn);min-width:32px;">67%</span><span style="font-size:10px;color:var(--text3);">제척 0</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;font-weight:600;min-width:48px;">하태훈</span><span style="font-size:10px;color:var(--text3);min-width:38px;">위벤처스</span><div style="flex:1;background:var(--bg3);border-radius:2px;height:8px;overflow:hidden;"><div style="width:67%;height:100%;background:var(--warn);border-radius:2px;"></div></div><span style="font-size:11px;font-weight:700;color:var(--warn);min-width:36px;">2/3</span><span style="font-size:10px;color:var(--warn);min-width:32px;">67%</span><span style="font-size:10px;color:var(--text3);">제척 0</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;font-weight:600;min-width:48px;">유승운</span><span style="font-size:10px;color:var(--text3);min-width:38px;">스톤브릿지</span><div style="flex:1;background:var(--bg3);border-radius:2px;height:8px;overflow:hidden;"><div style="width:33%;height:100%;background:var(--danger);border-radius:2px;"></div></div><span style="font-size:11px;font-weight:700;color:var(--danger);min-width:36px;">1/3</span><span style="font-size:10px;color:var(--danger);min-width:32px;">33%</span><span style="font-size:10px;color:var(--text3);">제척 0</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 월별 집행 추이 -->
+        <div style="background:var(--white);border:1px solid var(--border);border-radius:2px;overflow:hidden;margin-bottom:14px;">
+          <div style="padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg3);font-size:11px;font-weight:700;">월별 투자 집행 추이 <span style="font-size:10px;color:var(--text3);font-weight:400;">· KiiPS 확정값 기준 · 납입완료 건</span></div>
+          <div style="padding:16px 20px;">
+            <div style="display:flex;align-items:flex-end;gap:8px;height:120px;margin-bottom:6px;">
+              <div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;"><span style="font-size:10px;color:var(--text2);font-weight:600;">15억</span><div style="width:100%;background:var(--orange);border-radius:2px 2px 0 0;height:60px;"></div><span style="font-size:10px;color:var(--text3);">1월</span><span style="font-size:9px;color:var(--text3);">2건</span></div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;"><span style="font-size:10px;color:var(--text2);font-weight:600;">10억</span><div style="width:100%;background:var(--orange);border-radius:2px 2px 0 0;height:40px;"></div><span style="font-size:10px;color:var(--text3);">2월</span><span style="font-size:9px;color:var(--text3);">1건</span></div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;"><span style="font-size:10px;color:var(--text2);font-weight:600;">10억</span><div style="width:100%;background:var(--orange);border-radius:2px 2px 0 0;height:40px;"></div><span style="font-size:10px;color:var(--text3);">3월</span><span style="font-size:9px;color:var(--text3);">1건</span></div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;"><span style="font-size:10px;color:var(--success);font-weight:600;">미확정</span><div style="width:100%;background:var(--bg3);border:1px dashed var(--border2);border-radius:2px 2px 0 0;height:100px;display:flex;align-items:center;justify-content:center;"><span style="font-size:9px;color:var(--text3);">진행중</span></div><span style="font-size:10px;color:var(--orange);">4월</span><span style="font-size:9px;color:var(--text3);">4건 예정</span></div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;"><span style="font-size:10px;color:var(--text3);">-</span><div style="width:100%;background:var(--bg3);border:1px dashed var(--border);border-radius:2px 2px 0 0;height:10px;"></div><span style="font-size:10px;color:var(--text3);">5월</span><span style="font-size:9px;color:var(--text3);">계획중</span></div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;"><span style="font-size:10px;color:var(--text3);">-</span><div style="width:100%;background:var(--bg3);border:1px dashed var(--border);border-radius:2px 2px 0 0;height:10px;"></div><span style="font-size:10px;color:var(--text3);">6~12월</span><span style="font-size:9px;color:var(--text3);">-</span></div>
+            </div>
+            <div style="font-size:10px;color:var(--text3);">납입완료 누계: <b style="color:var(--text2);">35억</b> / 연간 예산 250억 · 남은 예산 215억</div>
+          </div>
+        </div>
+
+        <!-- 2열: 도메인 분포 + 부결취하 분석 -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:2px;overflow:hidden;">
+            <div style="padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg3);font-size:11px;font-weight:700;">도메인별 투자 분포 <span style="font-size:10px;color:var(--text3);font-weight:400;">· 가결 9건</span></div>
+            <div style="padding:12px 14px;display:flex;flex-direction:column;gap:6px;">
+              <div style="font-size:10px;color:var(--text3);margin-bottom:2px;">★ = 2026 집중투자 도메인</div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;min-width:80px;color:var(--text2);">SaaS</span><div style="flex:1;background:var(--bg3);border-radius:2px;height:8px;overflow:hidden;"><div style="width:40%;height:100%;background:var(--info);border-radius:2px;"></div></div><span style="font-size:11px;color:var(--text2);">3건 · 18억</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;min-width:80px;color:var(--text2);">미디어/엔터</span><div style="flex:1;background:var(--bg3);border-radius:2px;height:8px;overflow:hidden;"><div style="width:33%;height:100%;background:var(--info);border-radius:2px;"></div></div><span style="font-size:11px;color:var(--text2);">2건 · 15억</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;min-width:80px;color:var(--orange);">★우주항공방산</span><div style="flex:1;background:var(--bg3);border-radius:2px;height:8px;overflow:hidden;"><div style="width:28%;height:100%;background:var(--orange);border-radius:2px;"></div></div><span style="font-size:11px;color:var(--text2);">1건 · 10억</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;min-width:80px;color:var(--text2);">F&amp;B</span><div style="flex:1;background:var(--bg3);border-radius:2px;height:8px;overflow:hidden;"><div style="width:28%;height:100%;background:var(--info);border-radius:2px;"></div></div><span style="font-size:11px;color:var(--text2);">1건 · 10억</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;min-width:80px;color:var(--orange);">★의료기기</span><div style="flex:1;background:var(--bg3);border-radius:2px;height:8px;overflow:hidden;"><div style="width:14%;height:100%;background:var(--orange);border-radius:2px;"></div></div><span style="font-size:11px;color:var(--text2);">1건 · 5억</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;min-width:80px;color:var(--text2);">E-commerce</span><div style="flex:1;background:var(--bg3);border-radius:2px;height:8px;overflow:hidden;"><div style="width:14%;height:100%;background:var(--info);border-radius:2px;"></div></div><span style="font-size:11px;color:var(--text2);">1건 · 5억</span></div>
+              <div style="margin-top:4px;padding-top:8px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);">집중투자 비중: <b style="color:var(--danger);">15억 / 250억 (6.0%)</b> · 목표 200억(80%) 대비 크게 미달</div>
+            </div>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:2px;overflow:hidden;">
+            <div style="padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg3);font-size:11px;font-weight:700;">부결·취하 케이스 분석</div>
+            <div style="padding:12px 14px;display:flex;flex-direction:column;gap:10px;">
+              <div style="padding:10px 12px;background:rgba(214,48,48,.04);border:1px solid rgba(214,48,48,.15);border-left:3px solid var(--danger);border-radius:2px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;"><span style="font-size:12px;font-weight:700;">그린다</span><span class="tag tag-rejected" style="font-size:10px;">부결 33.3%</span></div>
+                <div style="font-size:11px;color:var(--text2);margin-bottom:3px;">3차 · 2026-02-25 · Pre 249억</div>
+                <div style="font-size:10px;color:var(--text3);">찬성 2명(박영훈·김보미) / 반대 4명 · 밸류에이션 이견</div>
+              </div>
+              <div style="padding:10px 12px;background:rgba(148,143,141,.05);border:1px solid var(--border);border-left:3px solid var(--text3);border-radius:2px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;"><span style="font-size:12px;font-weight:700;">에스엔디스플레이</span><span class="tag tag-withdrawn" style="font-size:10px;">취하·기업거절</span></div>
+                <div style="font-size:11px;color:var(--text2);margin-bottom:3px;">4차 · 2026-03-25 · Pre 351억</div>
+                <div style="font-size:10px;color:var(--text3);">투자 대상 기업 측에서 투자 수용 거절</div>
+              </div>
+              <div style="padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:2px;">
+                <div style="font-size:10px;color:var(--text3);font-weight:700;margin-bottom:4px;">인사이트</div>
+                <div style="font-size:11px;color:var(--text2);line-height:1.6;">· 부결 사유: 밸류에이션 이견 (Pre 249억)<br>· 취하 사유: 기업 측 거절 (소싱 검증 강화 필요)<br>· 집중투자 도메인 비중 6% — 하반기 집중투자 딜 소싱 시급</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <div id="view-kpi" class="view">
+      <div class="sect-title"><span class="bar"></span>KPI 모니터링 <span class="cnt">· 향후 구현 예정</span></div>
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:2px;padding:48px;text-align:center;color:var(--text3);">
+        <div style="font-size:36px;margin-bottom:14px;">📊</div>
+        <div style="font-size:13px;line-height:1.8;">KPI 뷰는 투자계획·투심위 뷰 안정화 이후 구현 예정입니다.<br>예산 소진율·극초기 비중 추이·산업군 분포·심의위원 팔로우업 포함.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+
+
+
+<!-- RESULT INPUT MODAL -->
+<div class="modal-overlay" id="resultModal">
+  <div class="modal result-modal" style="max-height:92vh;">
+    <div class="modal-header" style="padding:14px 20px;">
+      <div class="modal-title">📝 투심위 결과 입력 · 5차 (2026-04-23)</div>
+      <button class="modal-close" onclick="closeResultModal()">✕</button>
+    </div>
+
+    <!-- 스텝 바 -->
+    <div class="step-bar" id="step-bar">
+      <div class="step-node">
+        <div class="step-circle s-active" id="sc-1">1</div>
+        <span class="step-text s-active" id="st-1">참석 위원 확정</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step-node">
+        <div class="step-circle s-pending" id="sc-2">2</div>
+        <span class="step-text s-pending" id="st-2">안건별 찬반 입력</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step-node">
+        <div class="step-circle s-pending" id="sc-3">3</div>
+        <span class="step-text s-pending" id="st-3">결과 확인 및 저장</span>
+      </div>
+    </div>
+
+    <div class="modal-body" style="padding:16px 20px;">
+
+      <!-- STEP 1 -->
+      <div id="rs-1">
+        <div class="algo-box" style="margin-bottom:14px;">
+          <div class="algo-icon" style="font-size:14px;">👥</div>
+          <div class="algo-text">각 위원 카드를 클릭해서 <b>참석 → 대리 → 불참</b> 상태를 설정하세요. 불참 위원은 다음 단계 찬반 입력에서 자동 비활성화됩니다.</div>
+        </div>
+        <div class="attend-grid">
+          <div class="attend-card s-present" id="ac-박영훈" onclick="cycleAttend('박영훈')">
+            <div class="attend-card-name">박영훈</div>
+            <div class="attend-card-org">디캠프</div>
+            <div class="attend-card-state s-present" id="as-박영훈">참석</div>
+          </div>
+          <div class="attend-card s-present" id="ac-김보미" onclick="cycleAttend('김보미')">
+            <div class="attend-card-name">김보미</div>
+            <div class="attend-card-org">디캠프</div>
+            <div class="attend-card-state s-present" id="as-김보미">참석</div>
+          </div>
+          <div class="attend-card s-present" id="ac-송은강" onclick="cycleAttend('송은강')">
+            <div class="attend-card-name">송은강</div>
+            <div class="attend-card-org">캡스톤파트너스</div>
+            <div class="attend-card-state s-present" id="as-송은강">참석</div>
+          </div>
+          <div class="attend-card s-present" id="ac-신덕준" onclick="cycleAttend('신덕준')">
+            <div class="attend-card-name">신덕준</div>
+            <div class="attend-card-org">한국투자파트너스</div>
+            <div class="attend-card-state s-present" id="as-신덕준">참석</div>
+          </div>
+          <div class="attend-card s-present" id="ac-안신영" onclick="cycleAttend('안신영')">
+            <div class="attend-card-name">안신영</div>
+            <div class="attend-card-org">에이스톤벤처스</div>
+            <div class="attend-card-state s-present" id="as-안신영">참석</div>
+          </div>
+          <div class="attend-card s-present" id="ac-유승운" onclick="cycleAttend('유승운')">
+            <div class="attend-card-name">유승운</div>
+            <div class="attend-card-org">스톤브릿지</div>
+            <div class="attend-card-state s-present" id="as-유승운">참석</div>
+          </div>
+          <div class="attend-card s-present" id="ac-이강수" onclick="cycleAttend('이강수')">
+            <div class="attend-card-name">이강수</div>
+            <div class="attend-card-org">컴퍼니케이파트너스</div>
+            <div class="attend-card-state s-present" id="as-이강수">참석</div>
+          </div>
+          <div class="attend-card s-present" id="ac-하태훈" onclick="cycleAttend('하태훈')">
+            <div class="attend-card-name">하태훈</div>
+            <div class="attend-card-org">위벤처스</div>
+            <div class="attend-card-state s-present" id="as-하태훈">참석</div>
+          </div>
+        </div>
+        <div id="proxy-area" style="margin-top:10px;"></div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div id="rs-2" style="display:none;">
+        <div class="algo-box" style="margin-bottom:14px;">
+          <div class="algo-icon" style="font-size:14px;">🗳</div>
+          <div class="algo-text">각 안건별로 위원의 의결(O/X/제척/-)을 선택하세요. 우측 <b>찬/반</b>과 <b>결과</b>가 실시간으로 계산됩니다.</div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="vi-table">
+            <thead>
+              <tr>
+                <th class="agenda-h">안건</th>
+                <th id="vth-박영훈">박영훈</th>
+                <th id="vth-김보미">김보미</th>
+                <th id="vth-송은강">송은강</th>
+                <th id="vth-신덕준">신덕준</th>
+                <th id="vth-안신영">안신영</th>
+                <th id="vth-유승운">유승운</th>
+                <th id="vth-이강수">이강수</th>
+                <th id="vth-하태훈">하태훈</th>
+                <th>찬/반</th><th>결과</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr id="vrow-1">
+                <td class="agenda-n">1호 · 위드로봇</td>
+                <td><select class="vi-sel vyes" id="vs-1-0" onchange="vsChange(this,1)" data-member="박영훈"><option value="yes">O</option><option value="no">X</option><option value="excl">제척</option><option value="absent">-</option></select></td>
+                <td><select class="vi-sel vyes" id="vs-1-1" onchange="vsChange(this,1)" data-member="김보미"><option value="yes">O</option><option value="no">X</option><option value="excl">제척</option><option value="absent">-</option></select></td>
+                <td><select class="vi-sel vyes" id="vs-1-2" onchange="vsChange(this,1)" data-member="송은강"><option value="yes">O</option><option value="no">X</option><option value="excl">제척</option><option value="absent">-</option></select></td>
+                <td><select class="vi-sel vyes" id="vs-1-3" onchange="vsChange(this,1)" data-member="신덕준"><option value="yes">O</option><option value="no">X</option><option value="excl">제척</option><option value="absent">-</option></select></td>
+                <td><select class="vi-sel vyes" id="vs-1-4" onchange="vsChange(this,1)" data-member="안신영"><option value="yes">O</option><option value="no">X</option><option value="excl">제척</option><option value="absent">-</option></select></td>
+                <td><select class="vi-sel vyes" id="vs-1-5" onchange="vsChange(this,1)" data-member="유승운"><option value="yes">O</option><option value="no">X</option><option value="excl">제척</option><option value="absent">-</option></select></td>
+                <td><select class="vi-sel vyes" id="vs-1-6" onchange="vsChange(this,1)" data-member="이강수"><option value="yes">O</option><option value="no">X</option><option value="excl">제척</option><option value="absent">-</option></select></td>
+                <td><select class="vi-sel vyes" id="vs-1-7" onchange="vsChange(this,1)" data-member="하태훈"><option value="yes">O</option><option value="no">X</option><option value="excl">제척</option><option value="absent">-</option></select></td>
+                <td><span class="vi-result pass" id="vr-1">8/0</span></td>
+                <td><span class="tag tag-paid" style="font-size:10px;" id="vt-1">가결 100%</span></td>
+              </tr>
+              <tr id="vrow-2">
+                <td class="agenda-n">2호 · 에너테크</td>
+                <td><select class="vi-sel vyes" id="vs-2-0" onchange="vsChange(this,2)" data-member="박영훈"><option value="yes">O</option><option value="no">X</option><option value="excl">제척</option><option value="absent">-</option></select></td>
+                <td><select class="vi-sel vyes" id="vs-2-1" onchange="vsChange(this,2)" data-member="김보미"><option value="yes">O</option><option value="no">X</option><option value="excl">제척</option><option value="absent">-</option></select></td>
+                <td><select class="vi-sel vyes" id="vs-2-2" onchange="vsChange(this,2)" data-member="송은강"><option value="yes">O</option><option value="no">X</option><option value="excl">제척</option><option value="absent">-</option></select></td>
+                <td><select class="vi-sel vyes" id="vs-2-3" onchange="vsChange(this,2)" data-member="신덕준"><option value="yes">O</option><option value="no">X</option><option value="excl">제척</option><option value="absent">-</option></select></td>
+                <td><select class="vi-sel vyes" id="vs-2-4" onchange="vsChange(this,2)" data-member="안신영"><option value="yes">O</option><option value="no">X</option><option value="excl">제척</option><option value="absent">-</option></select></td>
+                <td><select class="vi-sel vyes" id="vs-2-5" onchange="vsChange(this,2)" data-member="유승운"><option value="yes">O</option><option value="no">X</option><option value="excl">제척</option><option value="absent">-</option></select></td>
+                <td><select class="vi-sel vyes" id="vs-2-6" onchange="vsChange(this,2)" data-member="이강수"><option value="yes">O</option><option value="no">X</option><option value="excl">제척</option><option value="absent">-</option></select></td>
+                <td><select class="vi-sel vyes" id="vs-2-7" onchange="vsChange(this,2)" data-member="하태훈"><option value="yes">O</option><option value="no">X</option><option value="excl">제척</option><option value="absent">-</option></select></td>
+                <td><span class="vi-result pass" id="vr-2">8/0</span></td>
+                <td><span class="tag tag-paid" style="font-size:10px;" id="vt-2">가결 100%</span></td>
+              </tr>
+              <tr id="vrow-3">
+                <td class="agenda-n">3호 · 딥포인트</td>
+                <td><select class="vi-sel vyes" id="vs-3-0" onchange="vsChange(this,3)" data-member="박영훈"><option value="yes">O</option><option value="no">X</option><option value="excl">제척</option><option value="absent">-</option></select></td>
+                <td><select class="vi-sel vyes" id="vs-3-1" onchange="vsChange(this,3)" data-member="김보미"><option value="yes">O</option><option value="no">X</option><option value="excl">제척</option><option value="absent">-</option></select></td>
+                <td><select class="vi-sel vyes" id="vs-3-2" onchange="vsChange(this,3)" data-member="송은강"><option value="yes">O</option><option value="no">X</option><option value="excl">제척</option><option value="absent">-</option></select></td>
+                <td><select class="vi-sel vyes" id="vs-3-3" onchange="vsChange(this,3)" data-member="신덕준"><option value="yes">O</option><option value="no">X</option><option value="excl">제척</option><option value="absent">-</option></select></td>
+                <td><select class="vi-sel vyes" id="vs-3-4" onchange="vsChange(this,3)" data-member="안신영"><option value="yes">O</option><option value="no">X</option><option value="excl">제척</option><option value="absent">-</option></select></td>
+                <td><select class="vi-sel vyes" id="vs-3-5" onchange="vsChange(this,3)" data-member="유승운"><option value="yes">O</option><option value="no">X</option><option value="excl">제척</option><option value="absent">-</option></select></td>
+                <td><select class="vi-sel vyes" id="vs-3-6" onchange="vsChange(this,3)" data-member="이강수"><option value="yes">O</option><option value="no">X</option><option value="excl">제척</option><option value="absent">-</option></select></td>
+                <td><select class="vi-sel vyes" id="vs-3-7" onchange="vsChange(this,3)" data-member="하태훈"><option value="yes">O</option><option value="no">X</option><option value="excl">제척</option><option value="absent">-</option></select></td>
+                <td><span class="vi-result pass" id="vr-3">8/0</span></td>
+                <td><span class="tag tag-paid" style="font-size:10px;" id="vt-3">가결 100%</span></td>
+              </tr>
+              <tr id="vrow-4">
+                <td class="agenda-n">4호 · 테솔로</td>
+                <td><select class="vi-sel vyes" id="vs-4-0" onchange="vsChange(this,4)" data-member="박영훈"><option value="yes">O</option><option value="no">X</option><option value="excl">제척</option><option value="absent">-</option></select></td>
+                <td><select class="vi-sel vyes" id="vs-4-1" onchange="vsChange(this,4)" data-member="김보미"><option value="yes">O</option><option value="no">X</option><option value="excl">제척</option><option value="absent">-</option></select></td>
+                <td><select class="vi-sel vyes" id="vs-4-2" onchange="vsChange(this,4)" data-member="송은강"><option value="yes">O</option><option value="no">X</option><option value="excl">제척</option><option value="absent">-</option></select></td>
+                <td><select class="vi-sel vyes" id="vs-4-3" onchange="vsChange(this,4)" data-member="신덕준"><option value="yes">O</option><option value="no">X</option><option value="excl">제척</option><option value="absent">-</option></select></td>
+                <td><select class="vi-sel vyes" id="vs-4-4" onchange="vsChange(this,4)" data-member="안신영"><option value="yes">O</option><option value="no">X</option><option value="excl">제척</option><option value="absent">-</option></select></td>
+                <td><select class="vi-sel vyes" id="vs-4-5" onchange="vsChange(this,4)" data-member="유승운"><option value="yes">O</option><option value="no">X</option><option value="excl">제척</option><option value="absent">-</option></select></td>
+                <td><select class="vi-sel vyes" id="vs-4-6" onchange="vsChange(this,4)" data-member="이강수"><option value="yes">O</option><option value="no">X</option><option value="excl">제척</option><option value="absent">-</option></select></td>
+                <td><select class="vi-sel vyes" id="vs-4-7" onchange="vsChange(this,4)" data-member="하태훈"><option value="yes">O</option><option value="no">X</option><option value="excl">제척</option><option value="absent">-</option></select></td>
+                <td><span class="vi-result pass" id="vr-4">8/0</span></td>
+                <td><span class="tag tag-paid" style="font-size:10px;" id="vt-4">가결 100%</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- STEP 3 -->
+      <div id="rs-3" style="display:none;">
+        <div class="algo-box" style="margin-bottom:14px;">
+          <div class="algo-icon" style="font-size:14px;">✅</div>
+          <div class="algo-text">입력 내용을 최종 확인하세요. <b>저장 완료</b>하면 투자 계획 보드의 카드 상태가 자동으로 업데이트됩니다.</div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:2px;padding:14px 16px;">
+          <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">5차 투심위 결과 요약</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:14px;">
+            <div style="text-align:center;background:var(--white);border:1px solid var(--border);border-radius:2px;padding:8px;">
+              <div style="font-size:18px;font-weight:700;font-family:'Poppins',sans-serif;color:var(--text);" id="sum-attend">8</div>
+              <div style="font-size:10px;color:var(--text3);">참석 / 8인</div>
+            </div>
+            <div style="text-align:center;background:var(--white);border:1px solid var(--border);border-radius:2px;padding:8px;">
+              <div style="font-size:18px;font-weight:700;font-family:'Poppins',sans-serif;color:var(--success);" id="sum-pass">4</div>
+              <div style="font-size:10px;color:var(--text3);">가결 건수</div>
+            </div>
+            <div style="text-align:center;background:var(--white);border:1px solid var(--border);border-radius:2px;padding:8px;">
+              <div style="font-size:18px;font-weight:700;font-family:'Poppins',sans-serif;color:var(--danger);" id="sum-fail">0</div>
+              <div style="font-size:10px;color:var(--text3);">부결 건수</div>
+            </div>
+            <div style="text-align:center;background:var(--white);border:1px solid var(--border);border-radius:2px;padding:8px;">
+              <div style="font-size:18px;font-weight:700;font-family:'Poppins',sans-serif;color:var(--success);" id="sum-rate">100%</div>
+              <div style="font-size:10px;color:var(--text3);">평균 동의율</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;" id="sum-list">
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;padding:5px 10px;background:var(--white);border-radius:2px;border:1px solid var(--border);">
+              <span style="font-weight:600;">1호 · 위드로봇</span><span class="tag tag-paid" style="font-size:10px;">가결</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;padding:5px 10px;background:var(--white);border-radius:2px;border:1px solid var(--border);">
+              <span style="font-weight:600;">2호 · 에너테크</span><span class="tag tag-paid" style="font-size:10px;">가결</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;padding:5px 10px;background:var(--white);border-radius:2px;border:1px solid var(--border);">
+              <span style="font-weight:600;">3호 · 딥포인트</span><span class="tag tag-paid" style="font-size:10px;">가결</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;padding:5px 10px;background:var(--white);border-radius:2px;border:1px solid var(--border);">
+              <span style="font-weight:600;">4호 · 테솔로</span><span class="tag tag-paid" style="font-size:10px;">가결</span>
+            </div>
+          </div>
+          <div style="margin-top:10px;font-size:10px;color:var(--text3);padding-top:8px;border-top:1px solid var(--border);">
+            저장 시 가결 안건 → <b>가결(납입대기)</b> · 부결 → <b>부결</b> · 취하 → <b>취하</b> 로 투자 계획 보드 자동 업데이트
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="r-back-btn" onclick="rBack()" style="display:none;">← 이전</button>
+      <div style="flex:1;font-size:11px;color:var(--text3);display:flex;align-items:center;" id="r-hint"></div>
+      <button class="btn btn-ghost" onclick="closeResultModal()">취소</button>
+      <button class="btn btn-primary" id="r-next-btn" onclick="rNext()">다음 단계 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW TSW MODAL -->
+<div class="modal-overlay" id="newTswModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">신규 투자심사위원회 개최 등록</div>
+      <button class="modal-close" onclick="closeNewTswModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="algo-box" style="margin-bottom:16px;">
+        <div class="algo-icon" style="font-size:14px;">💡</div>
+        <div class="algo-text">
+          일시·장소를 확정하면 투자 계획에서 <span class="k">상정 확정</span> 상태인 딜이 자동으로 안건으로 편성됩니다.
+          안건은 개최 전까지 추가·제외 조정이 가능합니다.
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">차수</label>
+          <input class="form-input" value="6차" readonly style="background:var(--bg3);color:var(--text3);">
+          <div class="form-hint">자동 부여</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">분과</label>
+          <select class="form-select">
+            <option>직접투자분과</option>
+            <option>펀드출자분과</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">개최 예정일</label>
+          <input class="form-input" type="date" value="2026-05-28">
+        </div>
+        <div class="form-group">
+          <label class="form-label">시간</label>
+          <input class="form-input" type="time" value="10:00">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">개최 장소</label>
+        <input class="form-input" value="디캠프 선릉 6층 세미나실">
+      </div>
+      <div class="form-group">
+        <label class="form-label">결의 방법</label>
+        <select class="form-select">
+          <option>대면</option>
+          <option>서면</option>
+          <option>대면 + 서면 혼합</option>
+        </select>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:2px;padding:12px 14px;margin-top:4px;">
+        <div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;">자동 편성 예정 안건 (상정 확정 건)</div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <div style="display:flex;justify-content:space-between;font-size:11px;padding:4px 8px;background:var(--white);border-radius:2px;">
+            <span style="font-weight:600;">서울다이나믹스</span><span style="color:var(--text3);">김한솔 · 5억</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;padding:4px 8px;background:var(--white);border-radius:2px;">
+            <span style="font-weight:600;">MPNX</span><span style="color:var(--text3);">이인호 · 2억</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;padding:4px 8px;background:var(--white);border-radius:2px;">
+            <span style="font-weight:600;">레오스페이스</span><span style="color:var(--text3);">김영상 · 10억</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;padding:4px 8px;background:var(--white);border-radius:2px;">
+            <span style="font-weight:600;">JJ&amp;COMPANIES</span><span style="color:var(--text3);">김영상 · 10억</span>
+          </div>
+        </div>
+        <div style="font-size:10px;color:var(--text3);margin-top:8px;">저장 후 안건별 세부 조건(투자금액·지분율 등) 입력 가능</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeNewTswModal()">취소</button>
+      <button class="btn btn-primary" onclick="saveNewTsw()">개최 등록 확정</button>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal settings-modal">
+    <div class="modal-header">
+      <div class="modal-title">⚙ 연도별 파라미터 설정</div>
+      <button class="modal-close" onclick="closeSettings()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- 연도 선택 -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border);">
+        <span style="font-size:12px;font-weight:600;color:var(--text2);">설정 연도</span>
+        <div style="display:flex;gap:6px;" id="settings-year-btns">
+          <button class="filter-btn" onclick="switchSettingsYear(2024,this)">2024</button>
+          <button class="filter-btn" onclick="switchSettingsYear(2025,this)">2025</button>
+          <button class="filter-btn active" onclick="switchSettingsYear(2026,this)">2026</button>
+          <button class="filter-btn" onclick="switchSettingsYear(2027,this)">+ 2027 추가</button>
+        </div>
+      </div>
+
+      <!-- 예산 및 기준 -->
+      <div class="settings-section">
+        <div class="settings-section-title">💰 예산 및 KPI 기준</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">연간 예산 (억원)</label>
+            <input class="form-input" id="setting-budget" value="250">
+            <div class="form-hint">KPI 소진율·집중투자 목표 계산 기준</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">극초기 기준 Pre-money (억원 이하)</label>
+            <input class="form-input" id="setting-early" value="100">
+            <div class="form-hint">이 금액 이하 Pre-money = 극초기 자동 분류</div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">극초기 목표 비중 (%)</label>
+            <input class="form-input" id="setting-early-target" value="20">
+          </div>
+          <div class="form-group">
+            <label class="form-label">집중투자 목표 비중 (%)</label>
+            <input class="form-input" id="setting-focus-target" value="80">
+          </div>
+        </div>
+      </div>
+
+      <!-- 집중투자 도메인 -->
+      <div class="settings-section">
+        <div class="settings-section-title">⭐ 집중투자 도메인 설정 <span id="settings-year-label" style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0;">(2026년 기준)</span></div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:10px;">
+          체크된 도메인이 해당 연도의 집중투자 영역으로 지정됩니다. 카드의 ★ 표시와 KPI 집중투자 비중 계산에 자동 반영됩니다.
+        </div>
+        <div class="domain-check-grid" id="domain-check-grid">
+          <!-- JS로 렌더링 -->
+        </div>
+      </div>
+
+      <!-- 히스토리 요약 -->
+      <div class="settings-section">
+        <div class="settings-section-title">📋 연도별 집중투자 도메인 히스토리</div>
+        <div style="display:flex;flex-direction:column;gap:6px;" id="domain-history">
+          <div style="display:flex;gap:8px;align-items:flex-start;font-size:11px;">
+            <span style="font-family:'Poppins',sans-serif;font-weight:700;color:var(--text3);min-width:36px;">2024</span>
+            <span style="color:var(--text2);">바이오테크, 딥테크, SaaS</span>
+          </div>
+          <div style="display:flex;gap:8px;align-items:flex-start;font-size:11px;">
+            <span style="font-family:'Poppins',sans-serif;font-weight:700;color:var(--text3);min-width:36px;">2025</span>
+            <span style="color:var(--text2);">의료기기, 바이오테크, 딥테크</span>
+          </div>
+          <div style="display:flex;gap:8px;align-items:flex-start;font-size:11px;">
+            <span style="font-family:'Poppins',sans-serif;font-weight:700;color:var(--orange);min-width:36px;">2026 ●</span>
+            <span style="color:var(--text);">로봇, 반도체, 의료기기, 우주·항공·방산, 신재생에너지, 모빌리티, 사이버보안, 패션/뷰티, 기계장치</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeSettings()">취소</button>
+      <button class="btn btn-primary" onclick="saveSettings()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- POOL ADD MODAL -->
+<div class="modal-overlay" id="poolAddModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">위원 후보 추가</div>
+      <button class="modal-close" onclick="closePoolAddModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">이름</label>
+          <input class="form-input" placeholder="예: 홍길동">
+        </div>
+        <div class="form-group">
+          <label class="form-label">소속기관</label>
+          <input class="form-input" placeholder="예: ABC벤처스">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">직책</label>
+          <input class="form-input" placeholder="예: 대표, 상무 등">
+        </div>
+        <div class="form-group">
+          <label class="form-label">연락처</label>
+          <input class="form-input" placeholder="010-0000-0000">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">분과</label>
+          <select class="form-select">
+            <option>직접투자분과</option>
+            <option>펀드출자분과</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">구분</label>
+          <select class="form-select">
+            <option>투자전문</option>
+            <option>출자전문</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">우선순위</label>
+          <select class="form-select">
+            <option>1순위</option>
+            <option>2순위</option>
+            <option>미정</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">이메일</label>
+          <input class="form-input" placeholder="example@company.com">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">주요 분야 / 경력 요약</label>
+        <input class="form-input" placeholder="예: AI, 반도체 전문 / 서울대 전기공학">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closePoolAddModal()">취소</button>
+      <button class="btn btn-primary" onclick="savePoolMock()">추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">신규 투자 계획 추가</div>
+      <button class="modal-close" onclick="closeAddModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">기업명</label>
+        <input class="form-input" placeholder="예: 위드로봇">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">상정 예정 월</label>
+          <select class="form-select">
+            <option>2026년 5월</option><option>2026년 6월</option><option>2026년 7월</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">담당 심사역</label>
+          <select class="form-select">
+            <option>김한솔</option><option>이인호</option><option>이은정</option><option>김영상</option><option>성낙환</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">투자 예정 금액 (억원)</label>
+          <input class="form-input" placeholder="예: 5.0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Pre-money (억원)</label>
+          <input class="form-input" placeholder="예: 150">
+          <div class="form-hint">100억 이하 시 극초기 자동 분류</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">디캠프 투자도메인</label>
+        <select class="form-select" id="modal-domain" onchange="updateFocusBadge()">
+          <option value="">선택하세요</option>
+        </select>
+        <div class="form-hint" id="modal-focus-hint" style="color:var(--orange);display:none;">★ 2026년 집중투자 도메인입니다</div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">상태</label>
+          <select class="form-select"><option>검토중</option><option>상정 확정</option></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">후속 투자 여부</label>
+          <select class="form-select"><option>해당없음</option><option>후속</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeAddModal()">취소</button>
+      <button class="btn btn-primary" onclick="saveMock()">추가</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// =============================================
+// 연도별 집중투자 도메인 히스토리
+// 매년 여기에 해당 연도 항목 추가
+// =============================================
+const FOCUS_DOMAINS = {
+  2024: ['바이오테크', '딥테크', 'SaaS'],
+  2025: ['의료기기', '바이오테크', '딥테크'],
+  2026: ['로봇', '반도체', '의료기기', '우주·항공·방산', '신재생에너지',
+         '모빌리티', '사이버보안', '패션/뷰티', '기계장치'],
+  // 2027: [] ← 다음 연도 집중투자 확정 시 추가
+};
+
+// 전체 도메인 목록 (순수 도메인명만)
+const ALL_DOMAINS = [
+  '의약품', 'SaaS', '디지털 헬스케어', '로봇', '차세대에너지',
+  '미디어/엔터', '신재생에너지', '블록체인', '반도체', '네트워크 장비',
+  '패션/뷰티', '애그테크', '사이버보안', '우주·항공·방산',
+  '컴퓨터 및 주변장치', 'E-commerce', '의료기기', '모빌리티',
+  '순환경제', '바이오테크', 'F&B', '기타 신소재', '기계장치', '해당 없음'
+];
+
+const CURRENT_YEAR = 2026;
+
+function isFocusDomain(domain, year) {
+  year = year || CURRENT_YEAR;
+  return (FOCUS_DOMAINS[year] || []).includes(domain);
+}
+
+// =============================================
+// KPI 데이터 (도메인 수정 반영: 웨이크→F&B, 딥포인트→패션/뷰티)
+// =============================================
+const KPI = {
+  // focus_pct = 집중투자 집행액 / 예산 250억 (목표: 200억 = 80%)
+  paid:   { total:35, early:2, early_pct:5.7,  budget_pct:14.0, passed:6,  dropped:2, focus:15, focus_pct:6.0,
+            note:'2026년 투자계획 건 중 KiiPS 등록 완료분 (KiiPS 확정값 기준)' },
+  passed: { total:60, early:2, early_pct:3.3,  budget_pct:24.0, passed:9,  dropped:2, focus:15, focus_pct:6.0,
+            note:'2026년 투자계획 건 (납입대기 스텝랩·23세기·비즈 포함)' },
+  all:    { total:50, early:7, early_pct:14.0, budget_pct:20.0, passed:12, dropped:2, focus:20, focus_pct:8.0,
+            note:'2026 납입 전체 — 25년 계획 건(르몽·콘스탄트·아헤스) 포함. 기준 미확정' },
+};
+
+// 산업 분포 데이터 (도메인 수정 반영)
+const DOMAIN_DATA = [
+  {domain:'로봇',           count:2, amt:12.5, focus:true},
+  {domain:'우주·항공·방산', count:1, amt:10.0, focus:true},
+  {domain:'의료기기',       count:1, amt:5.0,  focus:true},
+  {domain:'패션/뷰티',      count:1, amt:5.0,  focus:true},
+  {domain:'SaaS',           count:3, amt:18.0, focus:false},
+  {domain:'차세대에너지',   count:2, amt:12.5, focus:false},
+  {domain:'미디어/엔터',    count:2, amt:15.0, focus:false},
+  {domain:'F&B',            count:1, amt:10.0, focus:false},
+  {domain:'E-commerce',     count:1, amt:5.0,  focus:false},
+];
+
+let currentMode = 'paid';
+
+function setKpiMode(mode, btn) {
+  currentMode = mode;
+  document.querySelectorAll('.kpi-toggle-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderKpi(mode);
+}
+
+function renderKpi(mode) {
+  const d = KPI[mode];
+  // 예산 집행
+  document.getElementById('kpi-total').textContent = d.total + '억 (' + d.budget_pct + '%)';
+  document.getElementById('kpi-total-sub').textContent = '예산 250억 중 집행 완료';
+  document.getElementById('kpi-bar-total').style.width = d.budget_pct + '%';
+  // 극초기
+  document.getElementById('kpi-early').textContent = d.early + '억 (' + d.early_pct + '%)';
+  document.getElementById('kpi-early-sub').textContent = '예산 250억 대비 · 목표 50억';
+  const earlyBar = document.getElementById('kpi-bar-early');
+  earlyBar.style.width = Math.min(d.early_pct / 20 * 100, 100) + '%';
+  earlyBar.style.background = d.early_pct >= 20 ? 'var(--success)' : 'var(--warn)';
+  // 집중투자 도메인 비중
+  const focusEl = document.getElementById('kpi-focus');
+  const focusBar = document.getElementById('kpi-bar-focus');
+  const focusCard = document.getElementById('kpi-focus-card');
+  focusEl.textContent = d.focus + '억 (' + d.focus_pct + '%)';
+  document.getElementById('kpi-focus-sub').textContent =
+    '예산 250억 대비 · 목표 200억';
+  focusBar.style.width = Math.min(d.focus_pct / 80 * 100, 100) + '%';
+  if (d.focus_pct >= 80) {
+    focusEl.style.color = 'var(--success)';
+    focusBar.style.background = 'var(--success)';
+    focusCard.className = focusCard.className.replace('alert','').replace('ok','').trim() + ' ok';
+  } else if (d.focus_pct >= 60) {
+    focusEl.style.color = 'var(--warn)';
+    focusBar.style.background = 'var(--warn)';
+    focusCard.className = focusCard.className.replace('ok','').trim();
+    if (!focusCard.className.includes('alert')) focusCard.className += ' alert';
+  } else {
+    focusEl.style.color = 'var(--danger)';
+    focusBar.style.background = 'var(--danger)';
+    focusCard.className = focusCard.className.replace('ok','').trim();
+    if (!focusCard.className.includes('alert')) focusCard.className += ' alert';
+  }
+  // 가결건수·부결취하
+  document.getElementById('kpi-count').textContent = d.passed + '건';
+  document.getElementById('kpi-dropped').textContent = d.dropped + '건';
+  document.getElementById('kpi-dropped-sub').textContent = '부결 1건 · 취하(기업거절) 1건';
+  document.getElementById('kpi-note').textContent = d.note;
+  // 상단 칩
+  // 톱바 칩 제거됨 (안 A 적용) — KPI 카드에서 확인
+}
+
+function renderDomainDist() {
+  const el = document.getElementById('domain-dist');
+  el.innerHTML = DOMAIN_DATA.map(d => {
+    const isFocus = isFocusDomain(d.domain);
+    return `<div class="domain-chip${isFocus?' focus':''}">
+      <span class="domain-chip-name">${isFocus?'★ ':''}${d.domain}</span>
+      <span class="domain-chip-cnt">${d.count}건</span>
+      <span class="domain-chip-amt">${d.amt}억</span>
+    </div>`;
+  }).join('');
+}
+
+// =============================================
+// 모달 도메인 드롭다운 초기화
+// =============================================
+function initDomainSelect() {
+  const sel = document.getElementById('modal-domain');
+  if (!sel) return;
+  const focusList = FOCUS_DOMAINS[CURRENT_YEAR] || [];
+  // 집중투자 먼저, 나머지 뒤
+  const focused = ALL_DOMAINS.filter(d => focusList.includes(d));
+  const others = ALL_DOMAINS.filter(d => !focusList.includes(d));
+  let html = '<option value="">선택하세요</option>';
+  if (focused.length) {
+    html += `<optgroup label="★ ${CURRENT_YEAR}년 집중투자 도메인">`;
+    focused.forEach(d => { html += `<option value="${d}">★ ${d}</option>`; });
+    html += '</optgroup>';
+  }
+  html += '<optgroup label="전체 도메인">';
+  others.forEach(d => { html += `<option value="${d}">${d}</option>`; });
+  html += '</optgroup>';
+  sel.innerHTML = html;
+}
+
+function updateFocusBadge() {
+  const val = document.getElementById('modal-domain').value;
+  const hint = document.getElementById('modal-focus-hint');
+  hint.style.display = (val && isFocusDomain(val)) ? 'block' : 'none';
+}
+
+// =============================================
+// 뷰 전환 / 필터 / 토글
+// =============================================
+function switchView(v, btn) {
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.view-tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('view-' + v).classList.add('active');
+  btn.classList.add('active');
+}
+
+function setFilter(type, val, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    if (b.onclick && b.onclick.toString().includes("'manager'")) b.classList.remove('active');
+  });
+  btn.classList.add('active');
+  document.querySelectorAll('.plan-card').forEach(card => {
+    if (card.dataset.archived === 'true' && !document.getElementById('show-archived').checked) return;
+    card.style.display = (val === 'all' || card.dataset.manager === val) ? '' : 'none';
+  });
+}
+
+function toggleArchived(show) {
+  document.querySelectorAll('.plan-card[data-archived="true"]').forEach(card => {
+    card.style.display = show ? '' : 'none';
+  });
+}
+
+// =============================================
+// 모달
+// =============================================
+function openAddModal() {
+  initDomainSelect();
+  document.getElementById('addModal').classList.add('show');
+}
+function closeAddModal() { document.getElementById('addModal').classList.remove('show'); }
+function saveMock() { closeAddModal(); showToast('목업이므로 저장되지 않습니다.', 'info'); }
+function openDetail(name) { showToast(name + ' 상세 (목업 — 상세 모달 구현 예정)', 'info'); }
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = type || '';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// =============================================
+// 투심위 서브탭 / 찬반 토글
+// =============================================
+function filterPool(group, btn) {
+  btn.closest('.filter-bar').querySelectorAll('.filter-btn').forEach(b => {
+    if (b.onclick && b.onclick.toString().includes('filterPool(')) b.classList.remove('active');
+  });
+  btn.classList.add('active');
+  document.querySelectorAll('#tsw-sub-pool tr[data-group]').forEach(row => {
+    row.style.display = (group === 'all' || row.dataset.group === group) ? '' : 'none';
+  });
+}
+function filterPoolType(type, btn) {
+  btn.closest('.filter-bar').querySelectorAll('.filter-btn').forEach(b => {
+    if (b.onclick && b.onclick.toString().includes('filterPoolType(')) b.classList.remove('active');
+  });
+  btn.classList.add('active');
+  document.querySelectorAll('#tsw-sub-pool tr[data-type]').forEach(row => {
+    row.style.display = (type === 'all' || row.dataset.type === type) ? '' : 'none';
+  });
+}
+function openNewTswModal(){ document.getElementById('newTswModal').classList.add('show'); }
+function closeNewTswModal(){ document.getElementById('newTswModal').classList.remove('show'); }
+function saveNewTsw(){
+  closeNewTswModal();
+  showToast('6차 투심위 개최가 등록됐습니다. (목업)', 'success');
+}
+function openAddPoolModal(){ document.getElementById('poolAddModal').classList.add('show'); }
+function closePoolAddModal(){ document.getElementById('poolAddModal').classList.remove('show'); }
+function savePoolMock(){ closePoolAddModal(); showToast('후보가 추가됐습니다. (목업)', 'success'); }
+
+// 투자계획 보드 월 네비게이션
+let boardOffset = 0; // 0: 1~5월, 1: 2~6월 등
+const MONTHS = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+const allCols = () => document.querySelectorAll('.plan-col[data-month]');
+
+function shiftBoard(dir) {
+  const max = 7; // 최대 offset (12 - 5 = 7)
+  boardOffset = Math.max(0, Math.min(max, boardOffset + dir));
+  const cols = allCols();
+  cols.forEach((col, i) => {
+    const monthIdx = boardOffset + i; // 0-based
+    if (monthIdx < 12) {
+      col.style.display = '';
+      const monthLabel = col.querySelector('.plan-col-month');
+      if (monthLabel) {
+        const yr = monthLabel.querySelector('.yr');
+        const now = monthLabel.querySelector('.now');
+        monthLabel.innerHTML = (yr ? '<span class="yr">2026</span> ' : '') + MONTHS[monthIdx] + (monthIdx === 3 ? ' <span class="now">● 이번 달</span>' : '');
+      }
+    } else {
+      col.style.display = 'none';
+    }
+  });
+  // 범위 표시 업데이트
+  const endIdx = Math.min(boardOffset + 4, 11);
+  document.getElementById('board-range').textContent = MONTHS[boardOffset] + ' ~ ' + MONTHS[endIdx];
+  // 5월 이후 컬럼은 빈 컬럼 표시
+  const visibleMonths = boardOffset + 5;
+  if (visibleMonths > 5) {
+    showToast('6월 이후는 아직 계획 없음 (데이터 없음)', 'info');
+  }
+}
+
+function appointMock(btn, name) {
+  btn.textContent = '✓ 선임 완료';
+  btn.classList.add('appointed');
+  btn.disabled = true;
+  btn.closest('tr').classList.add('is-current');
+  const td = btn.closest('td');
+  td.innerHTML = '<span class="current-badge">✓ 현 위원 선임</span>';
+  showToast(name + ' 위원 선임 완료 (목업)', 'success');
+}
+function switchTswTab(tab, btn) {
+  document.querySelectorAll('.tsw-subview').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tsw-subtab').forEach(el => el.classList.remove('active'));
+  document.getElementById('tsw-sub-' + tab).classList.add('active');
+  btn.classList.add('active');
+}
+
+function toggleVoteDetail(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const isOpen = el.style.display !== 'none';
+  el.style.display = isOpen ? 'none' : 'block';
+  // 헤더 화살표 토글
+  const head = el.previousElementSibling?.previousElementSibling || el.closest('.tsw-session')?.querySelector('.tsw-head');
+  if (head) {
+    const arrow = head.querySelector('.tsw-meta span:last-child');
+    if (arrow) arrow.textContent = isOpen ? '▼ 찬반 상세' : '▲ 찬반 접기';
+  }
+}
+
+
+
+// =============================================
+// 결과 입력 모달 v2
+// =============================================
+let rStep = 1;
+const aState = {'박영훈':'present','김보미':'present','송은강':'present','신덕준':'present',
+                '안신영':'present','유승운':'present','이강수':'present','하태훈':'present'};
+const MEMBERS = ['박영훈','김보미','송은강','신덕준','안신영','유승운','이강수','하태훈'];
+
+function openResultModal() {
+  rStep = 1;
+  renderRStep();
+  document.getElementById('resultModal').classList.add('show');
+}
+function closeResultModal() {
+  document.getElementById('resultModal').classList.remove('show');
+}
+
+function renderRStep() {
+  // 스텝 표시/숨김
+  [1,2,3].forEach(i => {
+    const el = document.getElementById('rs-'+i);
+    if(el) el.style.display = (i === rStep) ? 'block' : 'none';
+  });
+  // 스텝 바 업데이트
+  [1,2,3].forEach(i => {
+    const sc = document.getElementById('sc-'+i);
+    const st = document.getElementById('st-'+i);
+    if(!sc||!st) return;
+    if(i < rStep)      { sc.className='step-circle s-done'; sc.textContent='✓'; st.className='step-text s-active'; }
+    else if(i===rStep) { sc.className='step-circle s-active'; sc.textContent=i; st.className='step-text s-active'; }
+    else               { sc.className='step-circle s-pending'; sc.textContent=i; st.className='step-text s-pending'; }
+  });
+  // 버튼
+  const nBtn = document.getElementById('r-next-btn');
+  const bBtn = document.getElementById('r-back-btn');
+  const hint = document.getElementById('r-hint');
+  bBtn.style.display = rStep > 1 ? '' : 'none';
+  if(rStep===1){ nBtn.textContent='다음 단계 →'; hint.textContent='참석·불참·대리 상태를 확인하세요'; }
+  else if(rStep===2){ nBtn.textContent='다음 단계 →'; hint.textContent='모든 안건의 찬반을 입력하세요'; }
+  else { nBtn.textContent='저장 완료'; hint.textContent=''; }
+  if(rStep===3) updateSummary();
+}
+
+function rNext() {
+  if(rStep < 3){ rStep++; renderRStep(); }
+  else { saveResult(); }
+}
+function rBack() {
+  if(rStep > 1){ rStep--; renderRStep(); }
+}
+
+function cycleAttend(name) {
+  const states = ['present','proxy','absent'];
+  const labels = {present:'참석', proxy:'대리', absent:'불참'};
+  const cur = states.indexOf(aState[name]);
+  const next = states[(cur+1)%3];
+  aState[name] = next;
+  const card = document.getElementById('ac-'+name);
+  const badge = document.getElementById('as-'+name);
+  if(!card||!badge) return;
+  card.className = 'attend-card s-'+next;
+  badge.className = 'attend-card-state s-'+next;
+  badge.textContent = labels[next];
+  // 대리인 입력 영역
+  renderProxyArea();
+  // 찬반 테이블 해당 열 비활성화
+  updateVoteDisable(name, next);
+}
+
+function renderProxyArea() {
+  const area = document.getElementById('proxy-area');
+  if(!area) return;
+  const proxies = MEMBERS.filter(m => aState[m]==='proxy');
+  if(!proxies.length){ area.innerHTML=''; return; }
+  area.innerHTML = '<div style="display:flex;flex-direction:column;gap:6px;margin-top:4px;">' +
+    proxies.map(name => `
+      <div style="display:flex;align-items:center;gap:10px;font-size:11px;padding:6px 10px;background:rgba(200,120,0,.06);border:1px solid rgba(200,120,0,.2);border-radius:2px;">
+        <span style="color:var(--warn);font-weight:700;min-width:56px;">${name}</span>
+        <span style="color:var(--text3);">대리인:</span>
+        <input class="form-input" style="flex:1;padding:4px 8px;font-size:11px;" placeholder="대리인 이름 입력">
+      </div>`).join('') + '</div>';
+}
+
+function updateVoteDisable(name, state) {
+  const idx = MEMBERS.indexOf(name);
+  if(idx < 0) return;
+  const th = document.getElementById('vth-'+name);
+  if(th){ th.style.opacity = state==='absent' ? '0.35' : '1'; }
+  [1,2,3,4].forEach(rowIdx => {
+    const sel = document.getElementById('vs-'+rowIdx+'-'+idx);
+    if(!sel) return;
+    if(state==='absent'){
+      sel.value='absent'; sel.className='vi-sel vabsent'; sel.disabled=true;
+    } else {
+      sel.disabled=false;
+      if(sel.value==='absent'){ sel.value='yes'; sel.className='vi-sel vyes'; }
+    }
+    calcRow(rowIdx);
+  });
+}
+
+function vsChange(sel, rowIdx) {
+  const val = sel.value;
+  sel.className = 'vi-sel v'+val;
+  calcRow(rowIdx);
+}
+
+function calcRow(rowIdx) {
+  let yes=0, no=0;
+  MEMBERS.forEach((m, i) => {
+    const sel = document.getElementById('vs-'+rowIdx+'-'+i);
+    if(!sel) return;
+    if(sel.value==='yes') yes++;
+    else if(sel.value==='no') no++;
+  });
+  const rEl = document.getElementById('vr-'+rowIdx);
+  const tEl = document.getElementById('vt-'+rowIdx);
+  if(!rEl||!tEl) return;
+  const total = yes+no;
+  const pct = total>0 ? Math.round(yes/total*1000)/10 : 0;
+  rEl.textContent = yes+'/'+no;
+  if(yes > no){
+    rEl.className='vi-result pass';
+    tEl.className='tag tag-paid'; tEl.style.fontSize='10px';
+    tEl.textContent='가결 '+pct+'%';
+  } else if(no > yes){
+    rEl.className='vi-result fail';
+    tEl.className='tag tag-rejected'; tEl.style.fontSize='10px';
+    tEl.textContent='부결 '+pct+'%';
+  } else {
+    rEl.className='vi-result'; rEl.style.color='var(--warn)';
+    tEl.className='tag tag-held'; tEl.style.fontSize='10px';
+    tEl.textContent='동수';
+  }
+}
+
+function updateSummary() {
+  const attendCnt = MEMBERS.filter(m => aState[m]!=='absent').length;
+  document.getElementById('sum-attend').textContent = attendCnt;
+  let pass=0,fail=0,rateSum=0;
+  [1,2,3,4].forEach(rowIdx => {
+    const tEl = document.getElementById('vt-'+rowIdx);
+    if(!tEl) return;
+    if(tEl.textContent.includes('가결')){ pass++; rateSum += parseFloat(tEl.textContent.replace('가결','').trim()||'100'); }
+    else if(tEl.textContent.includes('부결')){ fail++; }
+  });
+  document.getElementById('sum-pass').textContent = pass;
+  document.getElementById('sum-fail').textContent = fail;
+  document.getElementById('sum-rate').textContent =
+    (pass+fail)>0 ? Math.round(rateSum/(pass+fail)*10)/10+'%' : '-';
+}
+
+function saveResult() {
+  closeResultModal();
+  showToast('5차 투심위 결과가 저장됐습니다. 투자 계획 보드에 반영됩니다. (목업)', 'success');
+}
+
+// =============================================
+// 연도별 파라미터 데이터
+// =============================================
+const YEAR_PARAMS = {
+  2024: { budget:200, earlyMax:100, earlyTarget:20, focusTarget:80,
+          focusDomains:['바이오테크','딥테크','SaaS'] },
+  2025: { budget:200, earlyMax:100, earlyTarget:20, focusTarget:80,
+          focusDomains:['의료기기','바이오테크','딥테크'] },
+  2026: { budget:250, earlyMax:100, earlyTarget:20, focusTarget:80,
+          focusDomains:['로봇','반도체','의료기기','우주·항공·방산',
+                        '신재생에너지','모빌리티','사이버보안','패션/뷰티','기계장치'] },
+  2027: { budget:250, earlyMax:100, earlyTarget:20, focusTarget:80,
+          focusDomains:[] },
+};
+
+let currentYear = 2026;
+
+function switchYear(year, btn) {
+  currentYear = year;
+  document.querySelectorAll('.year-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  const params = YEAR_PARAMS[year] || {};
+  const hasData = year === 2026; // 목업에서는 2026만 실제 데이터 있음
+
+  // 예산 칩 업데이트
+  const budgetEl = document.getElementById('top-budget');
+  if (budgetEl) budgetEl.textContent = (params.budget || '-') + '억';
+
+  // 2026 외 연도는 "데이터 없음" 상태로 뷰 표시
+  if (!hasData) {
+    showToast(year + '년 데이터가 없습니다. 목업에서는 2026년만 제공됩니다.', 'info');
+  }
+
+  // FOCUS_DOMAINS 현재 연도로 업데이트
+  // (실제 구현 시 카드 재렌더링 트리거)
+  renderKpi(currentMode);
+}
+
+// =============================================
+// 설정 모달
+// =============================================
+function openSettings() {
+  renderDomainChecks(currentYear);
+  // 현재 연도 파라미터 값 채우기
+  const p = YEAR_PARAMS[currentYear] || {};
+  document.getElementById('setting-budget').value = p.budget || 250;
+  document.getElementById('setting-early').value = p.earlyMax || 100;
+  document.getElementById('setting-early-target').value = p.earlyTarget || 20;
+  document.getElementById('setting-focus-target').value = p.focusTarget || 80;
+  document.getElementById('settings-year-label').textContent = '(' + currentYear + '년 기준)';
+
+  // 설정 연도 버튼 활성화
+  document.querySelectorAll('#settings-year-btns .filter-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.textContent.trim().startsWith(String(currentYear)));
+  });
+
+  document.getElementById('settingsModal').classList.add('show');
+}
+function closeSettings() { document.getElementById('settingsModal').classList.remove('show'); }
+
+function switchSettingsYear(year, btn) {
+  document.querySelectorAll('#settings-year-btns .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('settings-year-label').textContent = '(' + year + '년 기준)';
+  const p = YEAR_PARAMS[year] || {};
+  document.getElementById('setting-budget').value = p.budget || 250;
+  document.getElementById('setting-early').value = p.earlyMax || 100;
+  document.getElementById('setting-early-target').value = p.earlyTarget || 20;
+  document.getElementById('setting-focus-target').value = p.focusTarget || 80;
+  renderDomainChecks(year);
+}
+
+function renderDomainChecks(year) {
+  const focused = (YEAR_PARAMS[year] || {}).focusDomains || [];
+  const grid = document.getElementById('domain-check-grid');
+  if (!grid) return;
+  grid.innerHTML = ALL_DOMAINS.filter(d => d !== '해당 없음').map(domain => {
+    const isChecked = focused.includes(domain);
+    return `<label class="domain-check-item${isChecked?' checked':''}" onclick="toggleDomainCheck(this)">
+      <input type="checkbox" ${isChecked?'checked':''} value="${domain}">
+      <span class="domain-check-label">${domain}</span>
+    </label>`;
+  }).join('');
+}
+
+function toggleDomainCheck(label) {
+  const cb = label.querySelector('input');
+  cb.checked = !cb.checked;
+  label.classList.toggle('checked', cb.checked);
+}
+
+function saveSettings() {
+  // 현재 설정 연도 파악
+  const activeYearBtn = document.querySelector('#settings-year-btns .filter-btn.active');
+  const settingsYear = activeYearBtn ? parseInt(activeYearBtn.textContent) : currentYear;
+
+  // 체크된 도메인 수집
+  const checked = [...document.querySelectorAll('#domain-check-grid input:checked')].map(i => i.value);
+
+  // YEAR_PARAMS 업데이트
+  if (!YEAR_PARAMS[settingsYear]) YEAR_PARAMS[settingsYear] = {};
+  YEAR_PARAMS[settingsYear].focusDomains = checked;
+  YEAR_PARAMS[settingsYear].budget = parseInt(document.getElementById('setting-budget').value) || 250;
+  YEAR_PARAMS[settingsYear].earlyMax = parseInt(document.getElementById('setting-early').value) || 100;
+  YEAR_PARAMS[settingsYear].earlyTarget = parseInt(document.getElementById('setting-early-target').value) || 20;
+  YEAR_PARAMS[settingsYear].focusTarget = parseInt(document.getElementById('setting-focus-target').value) || 80;
+
+  // FOCUS_DOMAINS 동기화
+  FOCUS_DOMAINS[settingsYear] = checked;
+
+  closeSettings();
+  renderDomainDist();
+  renderKpi(currentMode);
+  showToast(settingsYear + '년 파라미터가 저장됐습니다.', 'success');
+}
+
+// =============================================
+// 초기화
+// =============================================
+renderKpi('paid');
+renderDomainDist();
+document.querySelectorAll('.plan-card[data-archived="true"]').forEach(c => c.style.display = 'none');
+
+  // ── 비밀번호 검증 ──────────────────────────────────────────
+  const PW_HASH = 'fbb1d26ec7495a80e81629a8f3ee5925a2444c07ed837a4a04fb5e8bb4c64583';
+  const SESSION_KEY = 'dcamp_type1_auth';
+
+  async function sha256(str) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+
+  async function checkPw() {
+    const val = document.getElementById('pw-input').value;
+    if (!val) { showPwErr('비밀번호를 입력해주세요.'); return; }
+    const hash = await sha256(val);
+    if (hash === PW_HASH) {
+      sessionStorage.setItem(SESSION_KEY, '1');
+      document.getElementById('pw-screen').style.display = 'none';
+      document.getElementById('pw-input').value = '';
+    } else {
+      showPwErr('비밀번호가 올바르지 않습니다.');
+      document.getElementById('pw-input').value = '';
+      document.getElementById('pw-input').focus();
+    }
+  }
+
+  function showPwErr(msg) {
+    const el = document.getElementById('pw-err');
+    el.textContent = msg;
+    setTimeout(() => { el.textContent = ''; }, 3000);
+  }
+
+  // 세션 유지 — 새로고침 시 재입력 불필요
+  if (sessionStorage.getItem(SESSION_KEY) === '1') {
+    document.addEventListener('DOMContentLoaded', () => {
+      const s = document.getElementById('pw-screen');
+      if (s) s.style.display = 'none';
+    });
+  }
+
+</script>
+</body>
+</html>
